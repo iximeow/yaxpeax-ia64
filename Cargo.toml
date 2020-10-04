@@ -9,3 +9,4 @@ description = "ia64 decoder for the yaxpeax project"
 
 [dependencies]
 yaxpeax-arch = { version = "0.0.4", default-features = false, features = [] }
+bitvec = "*"
