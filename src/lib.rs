@@ -1,3 +1,10 @@
+//! `ia64` decoder implemented as part of th `yaxpeax` project. implements traits provided by
+//! `yaxpeax-arch`.
+//!
+//! instruction set manual references are with respect to the docuemnt
+//! [`itanium-architecture-vol-1-2-3-4-reference-set-manual.pdf`](https://www.intel.com/content/dam/doc/manual/itanium-architecture-vol-1-2-3-4-reference-set-manual.pdf)
+//! as of 2019-09-07. `sha256: 705d2fc04ab378568eddb6bac4ee6974b6224b8efb5f73606f964f4a86e22955`
+
 use yaxpeax_arch::{Arch, AddressDiff, Decoder, LengthedInstruction};
 use yaxpeax_arch::AddressBase;
 use bitvec::prelude::*;
@@ -1034,6 +1041,37 @@ pub struct Instruction {
     dest_boundary: Option<u8>,
     operands: [Operand; 5],
 }
+impl Instruction {
+    /// opcode for this instruction.
+    pub fn opcode(&self) -> Opcode {
+        self.opcode
+    }
+    /// for float instructions, `sf` may indicate which field in `FSPR` is used.
+    pub fn sf(&self) -> Option<u8> {
+        self.sf
+    }
+    /// predicate register this instruction is predicated on. `0` means this instruction is
+    /// unconditional.
+    pub fn predicate(&self) -> u8 {
+        self.predicate
+    }
+    /// index of the last operand that is written to (on the left-hand side of `=` when displayed)
+    /// in this instruction. `None` means no operand is written. (directly, anyway - post-increment
+    /// of register used to reference memory is still a write, and not tracked here.)
+    pub fn last_write_index(&self) -> Option<u8> {
+        self.dest_boundary
+    }
+    /// all operands used in this instruction.
+    pub fn operands(&self) -> &[Operand] {
+        for (i, op) in self.operands.iter().enumerate() {
+            if op == &Operand::None {
+                return &self.operands[..i];
+            }
+        }
+        &self.operands[..]
+    }
+}
+
 impl fmt::Display for Instruction {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.predicate != 0 {
@@ -1208,6 +1246,30 @@ impl fmt::Display for Instruction {
 pub struct InstructionBundle {
     bundle_tag: u8,
     instructions: [Instruction; 3],
+}
+impl InstructionBundle {
+    /// retrieve the tag for this instruction bundle. `tag` can be used as an index into
+    /// `BUNDLE_TAGS` to look up the stop pattern or instruction types of each instruction in this
+    /// bundle.
+    pub fn bundle_tag(&self) -> u8 {
+        self.bundle_tag
+    }
+
+    /// retrieve the instructions in this bundle. if this bundle contains an `LX` instruction, it
+    /// there will be two items (rather than three) in the returned slice.
+    pub fn instructions(&self) -> &[Instruction] {
+        let types = if let Some((types, _)) = BUNDLE_TAGS[self.bundle_tag as usize] {
+            types
+        } else {
+            // invalid bundle tag - might be a decoder bug?
+            return &[];
+        };
+        if types[2] == InstructionType::X {
+            &self.instructions[..2]
+        } else {
+            &self.instructions[..3]
+        }
+    }
 }
 impl yaxpeax_arch::LengthedInstruction for InstructionBundle {
     type Unit = yaxpeax_arch::AddressDiff<u64>;
