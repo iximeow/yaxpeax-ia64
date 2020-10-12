@@ -2353,7 +2353,7 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
         }
         I9 => {
             let r1 = word[6..13].load::<u8>();
-            let z = word[13..20].load::<u8>();
+            let _z = word[13..20].load::<u8>();
             // TODO: error on this properly? is this a #ud-like?
             // assert_eq!(z, 0);
             let r3 = word[20..27].load::<u8>();
@@ -2608,7 +2608,7 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
         I30 => {
             let p1 = word[6..13].load::<u8>();
             let imm = word[14..19].load::<u8>();
-            let z = word[20..27].load::<u8>();
+            let _z = word[20..27].load::<u8>();
             // TODO: what happens when this field isn't actually zero?
             // assert_eq!(z, 0);
             let p2 = word[27..33].load::<u8>();
