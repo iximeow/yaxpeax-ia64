@@ -55,6 +55,7 @@ pub enum Opcode {
     Ptc_g,
     Thash,
     Mov_m,
+    Mov_i,
     Ptc_ga,
     Ttag,
     Ptr_d,
@@ -206,7 +207,6 @@ pub enum Opcode {
     Probe_rw_fault_imm,
     Mov_to_ibr,
     Mov_from_ibr,
-    Mov_m_from_ar,
     Probe_r_fault_imm,
     Mov_to_pkr,
     Mov_fom_pkr,
@@ -289,25 +289,21 @@ pub enum Opcode {
     Hint_x,
     Nop_x,
     Movl,
+    Mov,
     Brl_cond_bwh_ph_dh,
     Brl_call_bwh_ph_dh,
-    Br_call_bwh_ph_dh,
+    Br_call,
     Brp_ipwh_ih,
     Break_x,
     Break_i,
     Zxt1,
-    Mov_from_ip,
     Zxt2,
-    Mov_from_b,
     Zxt4,
-    Mov_i_from_ar,
     Sxt1,
     Sxt2,
     Sxt4,
     Czx1_l,
     Czx2_l,
-    Mov_i_to_ar_imm,
-    Mov_i_to_ar,
     Czx1_r,
     Czx2_r,
     Hint_i,
@@ -315,7 +311,6 @@ pub enum Opcode {
     Chk_s_i_int,
     Mov_to_pr_rot_imm,
     Mov_to_pr,
-    Mov_from_pr,
     Mov_mwh_ih,
     Mov_ret_mwh_ih,
     Dep,
@@ -588,6 +583,7 @@ impl fmt::Display for Opcode {
             Opcode::Ptc_g => { write!(f, "ptc.g") }
             Opcode::Thash => { write!(f, "thash") }
             Opcode::Mov_m => { write!(f, "mov.m") }
+            Opcode::Mov_i => { write!(f, "mov.i") }
             Opcode::Ptc_ga => { write!(f, "ptc.ga") }
             Opcode::Ttag => { write!(f, "ttag") }
             Opcode::Ptr_d => { write!(f, "ptr.d") }
@@ -739,7 +735,6 @@ impl fmt::Display for Opcode {
             Opcode::Probe_rw_fault_imm => { write!(f, "probe.rw.fault.imm") }
             Opcode::Mov_to_ibr => { write!(f, "mov.to.ibr") }
             Opcode::Mov_from_ibr => { write!(f, "mov.from.ibr") }
-            Opcode::Mov_m_from_ar => { write!(f, "mov.m.from.ar") }
             Opcode::Probe_r_fault_imm => { write!(f, "probe.r.fault.imm") }
             Opcode::Mov_to_pkr => { write!(f, "mov.to.pkr") }
             Opcode::Mov_fom_pkr => { write!(f, "mov.fom.pkr") }
@@ -822,25 +817,21 @@ impl fmt::Display for Opcode {
             Opcode::Hint_x => { write!(f, "hint.x") }
             Opcode::Nop_x => { write!(f, "nop.x") }
             Opcode::Movl => { write!(f, "movl") }
+            Opcode::Mov => { write!(f, "mov") }
             Opcode::Brl_cond_bwh_ph_dh => { write!(f, "brl.cond.bwh.ph.dh") }
             Opcode::Brl_call_bwh_ph_dh => { write!(f, "brl.call.bwh.ph.dh") }
-            Opcode::Br_call_bwh_ph_dh => { write!(f, "br.call.bwh.ph.dh") }
+            Opcode::Br_call => { write!(f, "br.call") }
             Opcode::Brp_ipwh_ih => { write!(f, "brp.ipwh.ih") }
             Opcode::Break_x => { write!(f, "break.x") }
             Opcode::Break_i => { write!(f, "break.i") }
             Opcode::Zxt1 => { write!(f, "zxt1") }
-            Opcode::Mov_from_ip => { write!(f, "mov.from.ip") }
             Opcode::Zxt2 => { write!(f, "zxt2") }
-            Opcode::Mov_from_b => { write!(f, "mov.from.b") }
             Opcode::Zxt4 => { write!(f, "zxt4") }
-            Opcode::Mov_i_from_ar => { write!(f, "mov.i.from.ar") }
             Opcode::Sxt1 => { write!(f, "sxt1") }
             Opcode::Sxt2 => { write!(f, "sxt2") }
             Opcode::Sxt4 => { write!(f, "sxt4") }
             Opcode::Czx1_l => { write!(f, "czx1.l") }
             Opcode::Czx2_l => { write!(f, "czx2.l") }
-            Opcode::Mov_i_to_ar_imm => { write!(f, "mov.i.to.ar.imm") }
-            Opcode::Mov_i_to_ar => { write!(f, "mov.i.to.ar") }
             Opcode::Czx1_r => { write!(f, "czx1.r") }
             Opcode::Czx2_r => { write!(f, "czx2.r") }
             Opcode::Hint_i => { write!(f, "hint.i") }
@@ -848,7 +839,6 @@ impl fmt::Display for Opcode {
             Opcode::Chk_s_i_int => { write!(f, "chk.s.i.int") }
             Opcode::Mov_to_pr_rot_imm => { write!(f, "mov.to.pr.rot.imm") }
             Opcode::Mov_to_pr => { write!(f, "mov.to.pr") }
-            Opcode::Mov_from_pr => { write!(f, "mov.from.pr") }
             Opcode::Mov_mwh_ih => { write!(f, "mov") }
             Opcode::Mov_ret_mwh_ih => { write!(f, "mov.ret") }
             Opcode::Dep => { write!(f, "dep") }
@@ -1094,6 +1084,7 @@ impl fmt::Display for Opcode {
 pub struct Instruction {
     opcode: Opcode,
     sf: Option<u8>, // for float instructions, `sf` may indicate which FPSR status field to use.
+    hint: Option<u8>, // for memory instructions, `hint` indicates how to prefetch the referenced cache line.
     predicate: u8,
     // specify which operand, if any, is the last written operand in an instruction.
     dest_boundary: Option<u8>,
@@ -1113,23 +1104,59 @@ impl fmt::Display for Instruction {
                 self.operands[3].as_unsigned_imm(),
                 self.operands[4].as_unsigned_imm(),
             );
-        } else if let Opcode::Addl = self.opcode {
-            if self.operands[1] == Operand::GPRegister(GPRegister(0)) {
-                return write!(f, "mov {}={}",
-                    self.operands[0],
-                    self.operands[2]
-                );
-            }
-        } else if let Opcode::Adds = self.opcode {
-            if self.operands[1] == Operand::ImmI64(0) {
-                return write!(f, "mov {}={}",
-                    self.operands[0],
-                    self.operands[2]
-                );
-            }
         } else if let Opcode::Br_cond = self.opcode {
-            return write!(f, "br{}{}{} {}{}",
+            return write!(f, "br{}{}{}{} {}{}",
+                if self.predicate != 0 { ".cond" } else { "" },
                 ["", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
+                [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
+                ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
+                if let Operand::ImmI64(_) = self.operands[0] {
+                    "$+"
+                } else {
+                    ""
+                },
+                self.operands[0],
+            )
+        } else if let Opcode::Br_call = self.opcode {
+            return write!(f, "br.call{}{}{} {}={}{}",
+                [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[3].as_unsigned_imm() as usize],
+                [".few", ".many"][self.operands[2].as_unsigned_imm() as usize],
+                ["", ".clr"][self.operands[4].as_unsigned_imm() as usize],
+                self.operands[0],
+                if let Operand::ImmI64(_) = self.operands[1] {
+                    "$+"
+                } else {
+                    ""
+                },
+                self.operands[1],
+            )
+        } else if let Opcode::Br_cloop = self.opcode {
+            return write!(f, "br.cloop{}{}{} {}{}",
+                [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
+                [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
+                ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
+                if let Operand::ImmI64(_) = self.operands[0] {
+                    "$+"
+                } else {
+                    ""
+                },
+                self.operands[0],
+            )
+        } else if let Opcode::Br_cexit = self.opcode {
+            return write!(f, "br.cexit{}{}{} {}{}",
+                [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
+                [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
+                ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
+                if let Operand::ImmI64(_) = self.operands[0] {
+                    "$+"
+                } else {
+                    ""
+                },
+                self.operands[0],
+            )
+        } else if let Opcode::Br_ctop = self.opcode {
+            return write!(f, "br.ctop{}{}{} {}{}",
+                [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
                 [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
                 ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
                 if let Operand::ImmI64(_) = self.operands[0] {
@@ -1165,10 +1192,34 @@ impl fmt::Display for Instruction {
                 self.operands[0],
                 self.operands[1],
             )
+        } else if self.opcode == Opcode::Extr {
+            if self.operands[2].as_unsigned_imm() == 64 - self.operands[3].as_unsigned_imm() {
+                return write!(f, "shr {}={},{}",
+                    self.operands[0],
+                    self.operands[1],
+                    self.operands[2],
+                )
+            }
+        } else if self.opcode == Opcode::Extr_u {
+            if self.operands[2].as_unsigned_imm() == 64 - self.operands[3].as_unsigned_imm() {
+                return write!(f, "shr.u {}={},{}",
+                    self.operands[0],
+                    self.operands[1],
+                    self.operands[2],
+                )
+            }
         }
         write!(f, "{}", self.opcode)?;
         if let Some(sf) = self.sf {
             write!(f, ".s{}", sf)?;
+        }
+        if let Some(hint) = self.hint {
+            // hint bits of `00` indicate no prefetch hint
+            if hint != 0 {
+                f.write_str(
+                    [".nt1", ".nt2", ".nt3"][hint as usize]
+                )?;
+            }
         }
         for (i, op) in self.operands.iter().enumerate() {
             if op == &Operand::None {
@@ -1560,6 +1611,7 @@ impl Decoder<InstructionBundle> for InstDecoder {
             Instruction {
                 opcode,
                 sf: None,
+                hint: None,
                 predicate: word[0..6].load::<u8>(),
                 dest_boundary,
                 operands,
@@ -1584,6 +1636,7 @@ impl Decoder<InstructionBundle> for InstDecoder {
                     Instruction {
                         opcode,
                         sf: None,
+                        hint: None,
                         predicate: word[0..6].load::<u8>(),
                         dest_boundary,
                         operands,
@@ -1669,6 +1722,7 @@ impl Decoder<InstructionBundle> for InstDecoder {
                     Instruction {
                         opcode,
                         sf,
+                        hint: None,
                         predicate: word[0..6].load::<u8>(),
                         dest_boundary,
                         operands,
@@ -1687,6 +1741,7 @@ impl Decoder<InstructionBundle> for InstDecoder {
                     Instruction {
                         opcode,
                         sf: None,
+                        hint: None,
                         predicate,
                         dest_boundary,
                         operands,
@@ -1698,11 +1753,25 @@ impl Decoder<InstructionBundle> for InstDecoder {
                     panic!("use decode_l_instruction");
                 },
                 InstructionType::A => {
-                    let (opcode, operand_encoding) = get_a_opcode_and_encoding(tag, word);
-                    let (dest_boundary, operands) = read_a_operands(operand_encoding, word);
+                    let (mut opcode, operand_encoding) = get_a_opcode_and_encoding(tag, word);
+                    eprintln!("opcode, encoding: A({})/{:?}", opcode, operand_encoding);
+                    let (dest_boundary, mut operands) = read_a_operands(operand_encoding, word);
+                    if opcode == Opcode::Addl {
+                        if operands[2] == Operand::GPRegister(GPRegister(0)) {
+                            opcode = Opcode::Mov;
+                            operands[2] = Operand::None;
+                        }
+                    } else if opcode == Opcode::Adds {
+                        if operands[1] == Operand::ImmI64(0) {
+                            opcode = Opcode::Mov;
+                            operands[1] = operands[2];
+                            operands[2] = Operand::None;
+                        }
+                    }
                     Instruction {
                         opcode,
                         sf: None,
+                        hint: None,
                         predicate: word[0..6].load::<u8>(),
                         dest_boundary,
                         operands,
@@ -1713,9 +1782,31 @@ impl Decoder<InstructionBundle> for InstDecoder {
                 InstructionType::M => {
                     let (opcode, operand_encoding) = get_m_opcode_and_encoding(tag, word);
                     let (dest_boundary, operands) = read_m_operands(operand_encoding, word);
+                    let mut hint = Some(word[28..30].load::<u8>());
+                    // some `M` instructions don't actually have a hint, fix up after the fact.
+                    match (tag, word[30..36].load::<u8>()) {
+                        (6, 0x1c) |
+                        (6, 0x1d) |
+                        (6, 0x1e) |
+                        (6, 0x1f) |
+                        (4, 0x1c) |
+                        (4, 0x1d) |
+                        (4, 0x1e) |
+                        (4, 0x1f) => {
+                            if !word[36] && word[27] {
+                                hint = None;
+                            }
+                        }
+                        (0, _) |
+                        (1, _) => {
+                            hint = None;
+                        }
+                        (_, _) => {}
+                    }
                     Instruction {
                         opcode,
                         sf: None,
+                        hint: None,
                         predicate: word[0..6].load::<u8>(),
                         dest_boundary,
                         operands,
@@ -1875,8 +1966,9 @@ fn read_b_operands(encoding: OperandEncodingB, word: &BitSlice<Lsb0, u8>) -> (Op
             )
         }
         B3 => {
-            // TODO: missing four bits?
-            let imm = word[13..33].load::<u32>();
+            let imm20b = word[13..33].load::<u32>();
+            let s = word[36];
+            let imm = (((imm20b + ((s as u32) << 20)) as i32) << 11) >> 7;
             let wh = word[33..35].load::<u8>();
             let d = word[35];
             let p = word[12];
@@ -1885,7 +1977,7 @@ fn read_b_operands(encoding: OperandEncodingB, word: &BitSlice<Lsb0, u8>) -> (Op
                 Option::None,
                 [
                     Operand::BranchRegister(BranchRegister(b1)),
-                    Operand::ImmU64(imm as u64),
+                    Operand::ImmI64(imm as i64),
                     Operand::ImmU64(p as u64),
                     Operand::ImmU64(wh as u64),
                     Operand::ImmU64(d as u64),
@@ -2029,7 +2121,7 @@ fn read_f_operands(encoding: OperandEncodingF, word: &BitSlice<Lsb0, u8>) -> (Op
             let f2 = word[13..20].load::<u8>();
             let fclass7c = word[20..27].load::<u32>();
             let fc2 = word[33..35].load::<u32>();
-            let fclass = fc2 << 7 + fclass7c;
+            let fclass = (fc2 << 7) + fclass7c;
             let p2 = word[27..33].load::<u8>();
             four_op(
                 Some(1),
@@ -2276,7 +2368,7 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let pos = word[14..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let len = word[27..33].load::<u8>();
+            let len = word[27..33].load::<u8>() + 1; // length 0 still yielded f.ex `extr r36=r8,0x1f,0x01`
             four_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
@@ -2301,7 +2393,7 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
         I13 => {
             let r1 = word[6..13].load::<u8>();
             let imm7b = word[13..20].load::<u8>();
-            let imm = ((word[36] as u8) << 7 + imm7b) as i8;
+            let imm = (((word[36] as u8) << 7) + imm7b) as i8;
             let cpos = word[20..26].load::<u8>();
             let len = word[27..33].load::<u8>();
             four_op(
@@ -2524,92 +2616,79 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let _ = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            three_op(
+            two_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
                 Operand::Memory(GPRegister(r3)),
-                Operand::ImmU64(hint as u64)
             )
         },
         M2 => {
             let r1 = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            four_op(
+            three_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
-                Operand::Memory(GPRegister(r2)),
-                Operand::GPRegister(GPRegister(r3)),
-                Operand::ImmU64(hint as u64)
+                Operand::Memory(GPRegister(r3)),
+                Operand::GPRegister(GPRegister(r2)),
             )
         },
         M3 => {
             let r1 = word[6..13].load::<u8>();
-            let imm = word[13..20].load::<u16>() + (word[27] as u16) << 7 + (word[36] as u16) << 8;
+            let imm = word[13..20].load::<u16>() + ((word[27] as u16) << 7) + ((word[36] as u16) << 8);
+            let imm = ((imm as i16) << 7) >> 7;
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            four_op(
+            three_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
                 Operand::Memory(GPRegister(r3)),
-                Operand::ImmU64(imm as u64),
-                Operand::ImmU64(hint as u64)
+                Operand::ImmI64(imm as i64),
             )
         },
         M4 => {
             let _ = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            three_op(
+            two_op(
                 Some(0),
-                Operand::Memory(GPRegister(r2)),
-                Operand::GPRegister(GPRegister(r3)),
-                Operand::ImmU64(hint as u64)
+                Operand::Memory(GPRegister(r3)),
+                Operand::GPRegister(GPRegister(r2)),
             )
         },
         M5 => {
-            let imm7 = word[13..20].load::<u16>();
+            let imm7 = word[6..13].load::<u16>();
             let i = word[27] as u16;
             let s = word[36] as u16;
             let imm = imm7 + (i << 7) + (s << 8);
             let imm = (((imm as i16) << 7) >> 7) as i64;
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            four_op(
+            three_op(
                 Some(0),
-                Operand::Memory(GPRegister(r2)),
-                Operand::GPRegister(GPRegister(r3)),
+                Operand::Memory(GPRegister(r3)),
+                Operand::GPRegister(GPRegister(r2)),
                 Operand::ImmI64(imm),
-                Operand::ImmU64(hint as u64),
             )
         }
         M6 => {
             let f1 = word[6..13].load::<u8>();
             let _ = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            three_op(
+            two_op(
                 Some(0),
                 Operand::FloatRegister(FloatRegister(f1)),
                 Operand::Memory(GPRegister(r3)),
-                Operand::ImmU64(hint as u64)
             )
         }
         M7 => {
             let f1 = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            four_op(
+            three_op(
                 Some(0),
                 Operand::FloatRegister(FloatRegister(f1)),
                 Operand::Memory(GPRegister(r3)),
                 Operand::GPRegister(GPRegister(r2)),
-                Operand::ImmU64(hint as u64)
             )
         }
         M8 => {
@@ -2620,25 +2699,21 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
             let imm = imm7 + (i << 7) + (s << 8);
             let imm = (((imm as i16) << 7) >> 7) as i64;
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            four_op(
+            three_op(
                 Some(0),
                 Operand::FloatRegister(FloatRegister(f1)),
                 Operand::Memory(GPRegister(r3)),
                 Operand::ImmI64(imm),
-                Operand::ImmU64(hint as u64)
             )
         }
         M9 => {
             let _ = word[6..13].load::<u8>();
             let f2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            three_op(
+            two_op(
                 Some(0),
                 Operand::Memory(GPRegister(r3)),
                 Operand::FloatRegister(FloatRegister(f2)),
-                Operand::ImmU64(hint as u64)
             )
         }
         M10 => {
@@ -2649,27 +2724,22 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
             let imm = (((imm as i16) << 7) >> 7) as i64;
             let f2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            // TODO: memory operand here?
-            four_op(
+            three_op(
                 Some(0),
                 Operand::Memory(GPRegister(r3)),
                 Operand::FloatRegister(FloatRegister(f2)),
                 Operand::ImmI64(imm),
-                Operand::ImmU64(hint as u64)
             )
         }
         M11 => {
             let f1 = word[6..13].load::<u8>();
             let f2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            four_op(
+            three_op(
                 Some(1),
                 Operand::FloatRegister(FloatRegister(f1)),
                 Operand::FloatRegister(FloatRegister(f2)),
                 Operand::Memory(GPRegister(r3)),
-                Operand::ImmU64(hint as u64)
             )
         }
         M12 => {
@@ -2684,7 +2754,6 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
             } else {
                 8
             };
-            let hint = word[28..30].load::<u8>();
             (
                 Some(1),
                 [
@@ -2692,7 +2761,7 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
                     Operand::FloatRegister(FloatRegister(f2)),
                     Operand::Memory(GPRegister(r3)),
                     Operand::ImmU64(size),
-                    Operand::ImmU64(hint as u64)
+                    Operand::None,
                 ]
             )
         }
@@ -2700,23 +2769,19 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
             let _ = word[6..13].load::<u8>();
             let _ = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            two_op(
-                Option::None,
+            one_op(
+                false,
                 Operand::Memory(GPRegister(r3)),
-                Operand::ImmU64(hint as u64)
             )
         }
         M14 => {
             let _ = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            three_op(
+            two_op(
                 Option::None,
                 Operand::Memory(GPRegister(r3)),
                 Operand::GPRegister(GPRegister(r2)),
-                Operand::ImmU64(hint as u64)
             )
         }
         // TODO: m15?
@@ -2724,13 +2789,11 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            four_op(
+            three_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
-                Operand::Memory(GPRegister(r2)),
-                Operand::GPRegister(GPRegister(r3)),
-                Operand::ImmU64(hint as u64)
+                Operand::Memory(GPRegister(r3)),
+                Operand::GPRegister(GPRegister(r2)),
             )
         }
         M17 => {
@@ -2738,13 +2801,11 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
             let i = word[13..16].load::<u8>() as i8;
             let imm = ((i << 5) >> 5) as i64;
             let r3 = word[20..27].load::<u8>();
-            let hint = word[28..30].load::<u8>();
-            four_op(
+            three_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
                 Operand::Memory(GPRegister(r3)),
                 Operand::ImmI64(imm),
-                Operand::ImmU64(hint as u64)
             )
         }
         M18 => {
@@ -2835,13 +2896,13 @@ fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let ct = word[27..29].load::<u8>();
+            let ct = word[27..29].load::<u8>() + 1; // (1-4), encoded as (0-3) with implicit 1.
             four_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
                 Operand::GPRegister(GPRegister(r2)),
-                Operand::GPRegister(GPRegister(r3)),
                 Operand::ImmU64(ct as u64),
+                Operand::GPRegister(GPRegister(r3)),
             )
         },
         A3 => {
@@ -2875,15 +2936,18 @@ fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<Lsb0, u8>) -> (Op
         A5 => {
             let r1 = word[6..13].load::<u8>();
             let r3 = word[20..22].load::<u8>();
+            // experimentation says the immediate encoding here is bonkers. see `test_addl_imm`.
             let immb = word[13..20].load::<u32>();
-            let immc_d_s = word[22..37].load::<u32>();
-            let imm = (immc_d_s << 7) + immb;
+            let immc = word[22..27].load::<u32>();
+            let immd = word[27..36].load::<u32>();
+            let s = word[36] as u32;
+            let imm = (immc << 16) + (immd << 7) + immb + (s << 21);
             let imm = ((imm as i32) << 10) >> 10;
             three_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
-                Operand::GPRegister(GPRegister(r3)),
                 Operand::ImmI64(imm as i64),
+                Operand::GPRegister(GPRegister(r3)),
             )
         }
         A6 => {
@@ -2918,7 +2982,7 @@ fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<Lsb0, u8>) -> (Op
             let p1 = word[6..12].load::<u8>();
             let imm7b = word[13..20].load::<u8>();
             let s = word[36];
-            let imm = (imm7b + (s as u8) << 7) as i8 as i32;
+            let imm = (imm7b + ((s as u8) << 7)) as i8 as i32;
             let r3 = word[20..27].load::<u8>();
             let p2 = word[27..33].load::<u8>();
             four_op(
@@ -2944,7 +3008,7 @@ fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let ct = word[27..29].load::<u8>();
+            let ct = word[27..29].load::<u8>() + 1; // (1-4), encoded as (0-3) with implicit 1.
             four_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
@@ -3043,7 +3107,7 @@ fn get_b_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
             }
         },
         0x1 => {
-            (Br_call_bwh_ph_dh, B5)
+            (Br_call, B5)
         },
         0x2 => {
             // `Table 4-55 Indirect Predict/Nop/Hint Opcode Extensions`
@@ -3071,7 +3135,7 @@ fn get_b_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
             TABLE4_47[btype as usize]
         },
         0x5 => {
-            (Br_call_bwh_ph_dh, B3)
+            (Br_call, B3)
         },
         0x6 => { (White, None) },
         0x7 => {
@@ -3175,8 +3239,8 @@ fn get_f_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
         3 => { (Purple, None) },
         0x4 => {
             let index =
-                (word[12] as u8) << 2 +
-                (word[33] as u8) << 1 +
+                ((word[12] as u8) << 2) +
+                ((word[33] as u8) << 1) +
                 (word[36] as u8);
             const TABLE4_66: [(Opcode, OperandEncodingF); 8] = [
                 (Fcmp_eq, F4), (Fcmp_lt, F4), (Fcmp_le, F4), (Fcmp_unord, F4),
@@ -3274,10 +3338,10 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 // `Table 4-25 Misc I-Unit 6-bit Opcode Extensions`
                 // `1-bit Ext (Table 4-26)` is handled independently
                 const TABLE4_25: [(Opcode, OperandEncodingI); 64] = [
-                    (Break_i, I19), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Mov_i_to_ar_imm, I27), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
+                    (Break_i, I19), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Mov_i, I27), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                     (Zxt1, I29), (Zxt2, I29), (Zxt4, I29), (Purple, None), (Sxt1, I29), (Sxt2, I29), (Sxt4, I29), (Purple, None), (Czx1_l, I29), (Czx2_l, I29), (Purple, None), (Purple, None), (Czx1_r, I29), (Czx2_r, I29), (Purple, None), (Purple, None),
-                    (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Mov_i_to_ar, I26), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
-                    (Mov_from_ip, I25), (Mov_from_b, I22), (Mov_i_from_ar, I28), (Mov_from_pr, I25), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
+                    (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Mov_i, I26), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
+                    (Mov, I25), (Mov, I22), (Mov_i, I28), (Mov, I25), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                 ];
                 let index = word[27..33].load::<u8>();
                 if index == 0b00001 {
@@ -3336,10 +3400,10 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
             ];
 
             let table4_23_index =
-                (word[19] as u8) << 4 +
-                (word[33] as u8) << 3 +
-                (word[36] as u8) << 2 +
-                (word[12] as u8) << 1 +
+                ((word[19] as u8) << 4) +
+                ((word[33] as u8) << 3) +
+                ((word[36] as u8) << 2) +
+                ((word[12] as u8) << 1) +
                 (word[13] as u8);
 
             if word[33] {
@@ -3474,7 +3538,7 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                     (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                 ];
 
-                let index = (word[36] as u8) << 1 + (word[33] as u8);
+                let index = ((word[36] as u8) << 1) + (word[33] as u8);
                 let inner_index = word[28..32].load::<u8>() + (word[34..35].load::<u8>() << 4);
                 TABLE4_16[index as usize][inner_index as usize]
             }
@@ -3547,7 +3611,7 @@ fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 const TABLE4_45: [(Opcode, OperandEncodingM); 64] = [
                     (Mov_to_rr, M42), (Mov_to_dbr, M42), (Mov_to_ibr, M42), (Mov_to_pkr, M43), (Mov_to_pmc, M42), (Mov_to_pmd, M42), (Purple, None), (Purple, None), (Purple, None), (Ptc_l, M45), (Ptc_g, M45), (Ptc_ga, M45), (Ptr_d, M45), (Ptr_i, M45), (Itr_d, M42), (Itr_i, M42),
                     (Mov_from_rr, M43),(Mov_from_dbr, M43), (Mov_from_ibr, M43), (Mov_from_pkr, M43), (Mov_from_pmc, M43), (Mov_from_pmd, M43), (Purple, None), (Mov_from_cpuid, M43), (Probe_r_imm, M39), (Probe_w_imm, M39), (Thash, M46), (Ttag, M46), (Purple, None), (Purple, None), (Tpa, M46), (Tak, M46),
-                    (Purple, None), (Mov_from_psr_um, M36), (Mov_m_from_ar, M31), (Purple, None), (Mov_from_cr, M33), (Mov_from_psr, M36), (Purple, None), (Purple, None), (Purple, None), (Mov_to_psr_um, M35), (Mov_m, M29), (Purple, None), (Mov_to_cr, M32), (Mov_to_psr_l, M35), (Itc_d, M41), (Itc_i, M41),
+                    (Purple, None), (Mov_from_psr_um, M36), (Mov_m, M31), (Purple, None), (Mov_from_cr, M33), (Mov_from_psr, M36), (Purple, None), (Purple, None), (Purple, None), (Mov_to_psr_um, M35), (Mov_m, M29), (Purple, None), (Mov_to_cr, M32), (Mov_to_psr_l, M35), (Itc_d, M41), (Itc_i, M41),
                     (Fc, M28),(Probe_rw_fault_imm, M40), (Probe_r_fault_imm, M40), (Probe_w_fault_imm, M40), (Ptc_e, M47), (Purple, None), (Purple, None), (Purple, None), (Probe_r, M38), (Probe_w, M38), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                 ];
                 let index = word[27..33].load::<u8>();
@@ -3953,7 +4017,7 @@ fn get_a_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 // for table 4-10, the index includes bits 36 and 34
                 let index = index +
                     ((word[36] as u8) << 2) + // `tb`
-                    ((word[34] as u8) << 2);  // `x2`. `x2` is two buts but we only care about the lower one.
+                    ((word[34] as u8) << 3);  // `x2`. `x2` is two buts but we only care about the lower one.
                 // `Table 4-10 Integer Compare Opcode Extensions`
                 let encoding = if word[36] { A7 } else { A6 };
                 const TABLE4_10: [Opcode; 16] = [
@@ -3987,7 +4051,7 @@ fn get_a_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
             if x2 > 1 {
                 // for table 4-11, the index includes bit 34
                 let index = index +
-                    ((word[34] as u8) << 2); // `x2`. `x2` is two buts but we only care about the lower one.
+                    ((word[34] as u8) << 2); // `x2`. `x2` is two bits but we only care about the lower one.
                 // `Table 4-11 Integer Compare Immediate Opcode Extensions`
                 const TABLE4_11: [Opcode; 8] = [
                     Cmp_ltu,
@@ -4005,7 +4069,7 @@ fn get_a_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 // for table 4-10, the index includes bits 36 and 34
                 let index = index +
                     ((word[36] as u8) << 2) + // `tb`
-                    ((word[34] as u8) << 2);  // `x2`. `x2` is two buts but we only care about the lower one.
+                    ((word[34] as u8) << 3);  // `x2`. `x2` is two bits but we only care about the lower one.
                 // `Table 4-10 Integer Compare Opcode Extensions`
                 let encoding = if word[36] { A7 } else { A6 };
                 const TABLE4_10: [Opcode; 16] = [
@@ -4057,7 +4121,7 @@ fn get_a_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 // for table 4-10, the index includes bits 36 and 34
                 let index = index +
                     ((word[36] as u8) << 2) + // `tb`
-                    ((word[34] as u8) << 2);  // `x2`. `x2` is two buts but we only care about the lower one.
+                    ((word[34] as u8) << 3);  // `x2`. `x2` is two buts but we only care about the lower one.
                 // `Table 4-10 Integer Compare Opcode Extensions`
                 let encoding = if word[36] { A7 } else { A6 };
                 const TABLE4_10: [Opcode; 16] = [
