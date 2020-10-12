@@ -21,6 +21,7 @@ the `InstructionBundle` impl for `Display` is somewhat opinionated in output for
 
 * probably works
 * almost-`#[no_std]`
+* exists
 
 ### probably works
 the only decoding oracle i could find was the ia64 decoder in GNU `binutils`. i suspect it's correct, but between the size of the instruction set, details in immediate encoding, and user-mode-focused testing, there may be some misdecodes! a critical eye is warranted, though i expect `yaxpeax-ia64` to generally be correct or close to it.
@@ -33,4 +34,5 @@ if you would like to use `yaxpeax-ia64` in a `no-std` configuration:
 * why?
 * rust doesn't even target ia64 as a tier 3 platform, are you trying to get C bindings? that would be good to specify too
 
-###
+### exists?
+yeah i'm surprised too. the only other disassemblers seem to be the one in GNU binutils and possibly one in `qemu-ia64`, but i'm not sure about the latter.
