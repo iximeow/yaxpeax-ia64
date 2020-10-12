@@ -36,16 +36,11 @@ pub enum Opcode {
     Addl,
     Add,
     AddPlusOne,
-    Sub,
-    SubMinusOne,
-    SubImm,
-    AndImm,
-    AndcmImm,
-    OrImm,
-    XorImm,
     And,
     Andcm,
     Or,
+    Sub,
+    SubMinusOne,
     Xor,
 
     Ptc_l,
@@ -566,11 +561,7 @@ impl fmt::Display for Opcode {
             Opcode::AddPlusOne => { write!(f, "addplusone") }
             Opcode::Sub => { write!(f, "sub") }
             Opcode::SubMinusOne => { write!(f, "subminusone") }
-            Opcode::SubImm => { write!(f, "subimm") }
-            Opcode::AndImm => { write!(f, "andimm") }
-            Opcode::AndcmImm => { write!(f, "andcmimm") }
-            Opcode::OrImm => { write!(f, "orimm") }
-            Opcode::XorImm => { write!(f, "xorimm") }
+            Opcode::Sub => { write!(f, "sub") }
             Opcode::And => { write!(f, "and") }
             Opcode::Andcm => { write!(f, "andcm") }
             Opcode::Or => { write!(f, "or") }
@@ -3892,9 +3883,9 @@ fn get_a_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                         (Shladdp4, A2), (Shladdp4, A2), (Shladdp4, A2), (Shladdp4, A2),
                         (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                         (Purple, None), (Purple, None), (Purple, None), (Purple, None),
-                        (Purple, None), (SubImm, A3), (Purple, None), (Purple, None),
+                        (Purple, None), (Sub, A3), (Purple, None), (Purple, None),
                         (Purple, None), (Purple, None), (Purple, None), (Purple, None),
-                        (AndImm, A3), (AndcmImm, A3), (OrImm, A3), (XorImm, A3),
+                        (And, A3), (Andcm, A3), (Or, A3), (Xor, A3),
                         (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                         (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                         (Purple, None), (Purple, None), (Purple, None), (Purple, None),
