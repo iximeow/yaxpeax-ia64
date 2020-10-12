@@ -44,7 +44,6 @@ pub enum Opcode {
     Xor,
 
     Ptc_l,
-    Mov_to_psr_um,
     Probe_w,
     Ptc_g,
     Thash,
@@ -54,7 +53,6 @@ pub enum Opcode {
     Ttag,
     Ptr_d,
     Ptr_i,
-    Mov_to_psr_l,
     Itr_d,
     Tpa,
     Itc_d,
@@ -110,10 +108,6 @@ pub enum Opcode {
     St4_rel,
     St8_rel,
     St8_spill,
-    Mov_to_pmd,
-    Mov_from_pmd,
-    Mov_from_psr,
-    Mov_from_cpuid,
     Probe_r,
     Cmpxchg1_acq,
     Cmpxchg2_acq,
@@ -190,21 +184,11 @@ pub enum Opcode {
     Chk_a_clr_int,
     Chk_a_nc_fp,
     Chk_a_clr_fp,
-    Mov_to_rr,
-    Mov_from_rr,
     Fc,
-    Mov_to_dbr,
-    Mov_from_dbr,
-    Mov_from_psr_um,
     Probe_rw_fault,
-    Mov_to_ibr,
-    Mov_from_ibr,
     Probe_r_fault,
-    Mov_to_pkr,
     Mov_fom_pkr,
     Probe_w_fault,
-    Mov_to_pmc,
-    Mov_from_pmc,
     Ptc_e,
     Ldfp_a,
     Ldfp_sa,
@@ -247,7 +231,6 @@ pub enum Opcode {
     Ldfps_sa,
     Ldfpd_sa,
 
-    Mov_from_pkr,
     Setf_sig,
     Setf_exp,
     Setf_s,
@@ -299,8 +282,6 @@ pub enum Opcode {
     Hint_i,
     Nop_i,
     Chk_s_i_int,
-    Mov_to_pr_rot,
-    Mov_to_pr,
     Mov_mwh_ih,
     Mov_ret_mwh_ih,
     Dep,
@@ -563,7 +544,6 @@ impl fmt::Display for Opcode {
             Opcode::Xor => { write!(f, "xor") }
 
             Opcode::Ptc_l => { write!(f, "ptc.l") }
-            Opcode::Mov_to_psr_um => { write!(f, "mov.to.psr.um") }
             Opcode::Probe_w => { write!(f, "probe.w") }
             Opcode::Ptc_g => { write!(f, "ptc.g") }
             Opcode::Thash => { write!(f, "thash") }
@@ -573,7 +553,6 @@ impl fmt::Display for Opcode {
             Opcode::Ttag => { write!(f, "ttag") }
             Opcode::Ptr_d => { write!(f, "ptr.d") }
             Opcode::Ptr_i => { write!(f, "ptr.i") }
-            Opcode::Mov_to_psr_l => { write!(f, "mov.to.psr.l") }
             Opcode::Itr_d => { write!(f, "itr.d") }
             Opcode::Tpa => { write!(f, "tpa") }
             Opcode::Itc_d => { write!(f, "itc.d") }
@@ -629,10 +608,6 @@ impl fmt::Display for Opcode {
             Opcode::St4_rel => { write!(f, "st4.rel") }
             Opcode::St8_rel => { write!(f, "st8.rel") }
             Opcode::St8_spill => { write!(f, "st8.spill") }
-            Opcode::Mov_to_pmd => { write!(f, "mov.to.pmd") }
-            Opcode::Mov_from_pmd => { write!(f, "mov.from.pmd") }
-            Opcode::Mov_from_psr => { write!(f, "mov.from.psr") }
-            Opcode::Mov_from_cpuid => { write!(f, "mov.from.cpuid") }
             Opcode::Probe_r => { write!(f, "probe.r") }
             Opcode::Cmpxchg1_acq => { write!(f, "cmpxchg1.acq") }
             Opcode::Cmpxchg2_acq => { write!(f, "cmpxchg2.acq") }
@@ -709,21 +684,11 @@ impl fmt::Display for Opcode {
             Opcode::Chk_a_clr_int => { write!(f, "chk.a.clr.int") }
             Opcode::Chk_a_nc_fp => { write!(f, "chk.a.nc.fp") }
             Opcode::Chk_a_clr_fp => { write!(f, "chk.a.clr.fp") }
-            Opcode::Mov_to_rr => { write!(f, "mov.to.rr") }
-            Opcode::Mov_from_rr => { write!(f, "mov.from.rr") }
             Opcode::Fc => { write!(f, "fc") }
-            Opcode::Mov_to_dbr => { write!(f, "mov.to.dbr") }
-            Opcode::Mov_from_dbr => { write!(f, "mov.from.dbr") }
-            Opcode::Mov_from_psr_um => { write!(f, "mov.from.psr.um") }
             Opcode::Probe_rw_fault => { write!(f, "probe.rw.fault") }
-            Opcode::Mov_to_ibr => { write!(f, "mov.to.ibr") }
-            Opcode::Mov_from_ibr => { write!(f, "mov.from.ibr") }
             Opcode::Probe_r_fault => { write!(f, "probe.r.fault") }
-            Opcode::Mov_to_pkr => { write!(f, "mov.to.pkr") }
             Opcode::Mov_fom_pkr => { write!(f, "mov.fom.pkr") }
             Opcode::Probe_w_fault => { write!(f, "probe.w.fault") }
-            Opcode::Mov_to_pmc => { write!(f, "mov.to.pmc") }
-            Opcode::Mov_from_pmc => { write!(f, "mov.from.pmc") }
             Opcode::Ptc_e => { write!(f, "ptc.e") }
             Opcode::Ldfp_a => { write!(f, "ldfp.a") }
             Opcode::Ldfp_sa => { write!(f, "ldfp.sa") }
@@ -766,7 +731,6 @@ impl fmt::Display for Opcode {
             Opcode::Ldfps_sa => { write!(f, "ldfps.sa") }
             Opcode::Ldfpd_sa => { write!(f, "ldfpd.sa") }
 
-            Opcode::Mov_from_pkr => { write!(f, "mov.from.pkr") }
             Opcode::Setf_sig => { write!(f, "setf.sig") }
             Opcode::Setf_exp => { write!(f, "setf.exp") }
             Opcode::Setf_s => { write!(f, "setf.s") }
@@ -818,8 +782,6 @@ impl fmt::Display for Opcode {
             Opcode::Hint_i => { write!(f, "hint.i") }
             Opcode::Nop_i => { write!(f, "nop.i") }
             Opcode::Chk_s_i_int => { write!(f, "chk.s.i.int") }
-            Opcode::Mov_to_pr_rot => { write!(f, "mov.to.pr.rot") }
-            Opcode::Mov_to_pr => { write!(f, "mov.to.pr") }
             Opcode::Mov_mwh_ih => { write!(f, "mov") }
             Opcode::Mov_ret_mwh_ih => { write!(f, "mov.ret") }
             Opcode::Dep => { write!(f, "dep") }
@@ -3674,8 +3636,8 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 const TABLE4_24: [(Opcode, OperandEncodingI); 7] = [
                     (Purple, None),
                     (Chk_s_i_int, I20),
-                    (Mov_to_pr_rot, I24),
-                    (Mov_to_pr, I23),
+                    (Mov, I24),
+                    (Mov, I23),
                     (Purple, None),
                     (Purple, None),
                     (Purple, None),
@@ -3925,9 +3887,9 @@ fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
             if x3 == 0 {
                 // `Table 4-45 System/Memory Management 6-bit Ext`
                 const TABLE4_45: [(Opcode, OperandEncodingM); 64] = [
-                    (Mov_to_rr, M42), (Mov_to_dbr, M42), (Mov_to_ibr, M42), (Mov_to_pkr, M43), (Mov_to_pmc, M42), (Mov_to_pmd, M42), (Purple, None), (Purple, None), (Purple, None), (Ptc_l, M45), (Ptc_g, M45), (Ptc_ga, M45), (Ptr_d, M45), (Ptr_i, M45), (Itr_d, M42), (Itr_i, M42),
-                    (Mov_from_rr, M43),(Mov_from_dbr, M43), (Mov_from_ibr, M43), (Mov_from_pkr, M43), (Mov_from_pmc, M43), (Mov_from_pmd, M43), (Purple, None), (Mov_from_cpuid, M43), (Probe_r, M39), (Probe_w, M39), (Thash, M46), (Ttag, M46), (Purple, None), (Purple, None), (Tpa, M46), (Tak, M46),
-                    (Purple, None), (Mov_from_psr_um, M36), (Mov_m, M31), (Purple, None), (Mov, M33), (Mov_from_psr, M36), (Purple, None), (Purple, None), (Purple, None), (Mov_to_psr_um, M35), (Mov_m, M29), (Purple, None), (Mov, M32), (Mov_to_psr_l, M35), (Itc_d, M41), (Itc_i, M41),
+                    (Mov, M42), (Mov, M42), (Mov, M42), (Mov, M43), (Mov, M42), (Mov, M42), (Purple, None), (Purple, None), (Purple, None), (Ptc_l, M45), (Ptc_g, M45), (Ptc_ga, M45), (Ptr_d, M45), (Ptr_i, M45), (Itr_d, M42), (Itr_i, M42),
+                    (Mov, M43),(Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Purple, None), (Mov, M43), (Probe_r, M39), (Probe_w, M39), (Thash, M46), (Ttag, M46), (Purple, None), (Purple, None), (Tpa, M46), (Tak, M46),
+                    (Purple, None), (Mov, M36), (Mov_m, M31), (Purple, None), (Mov, M33), (Mov, M36), (Purple, None), (Purple, None), (Purple, None), (Mov, M35), (Mov_m, M29), (Purple, None), (Mov, M32), (Mov, M35), (Itc_d, M41), (Itc_i, M41),
                     (Fc, M28),(Probe_rw_fault, M40), (Probe_r_fault, M40), (Probe_w_fault, M40), (Ptc_e, M47), (Purple, None), (Purple, None), (Purple, None), (Probe_r, M38), (Probe_w, M38), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                 ];
                 let index = word[27..33].load::<u8>();
