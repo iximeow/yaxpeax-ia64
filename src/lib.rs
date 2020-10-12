@@ -1678,7 +1678,11 @@ impl Decoder<InstructionBundle> for InstDecoder {
             let tag = word[37..41].load::<u8>();
 
             let (opcode, operand_encoding) = get_l_opcode_and_encoding(tag, word);
-            let (dest_boundary, operands) = read_l_operands(operand_encoding, word, word2);
+            let (dest_boundary, operands) = if operand_encoding == OperandEncodingX::None {
+                (None, [Operand::None, Operand::None, Operand::None, Operand::None, Operand::None])
+            } else {
+                read_l_operands(operand_encoding, word, word2)
+            };
             Instruction {
                 opcode,
                 sf: None,
@@ -1701,7 +1705,11 @@ impl Decoder<InstructionBundle> for InstDecoder {
             match ty {
                 InstructionType::I => {
                     let (opcode, operand_encoding) = get_i_opcode_and_encoding(tag, word);
-                    let (dest_boundary, operands) = read_i_operands(operand_encoding, word);
+                    let (dest_boundary, operands) = if operand_encoding == OperandEncodingI::None {
+                        (None, [Operand::None, Operand::None, Operand::None, Operand::None, Operand::None])
+                    } else {
+                        read_i_operands(operand_encoding, word)
+                    };
                     Instruction {
                         opcode,
                         sf: None,
@@ -1753,7 +1761,11 @@ impl Decoder<InstructionBundle> for InstDecoder {
                             // storing an `sf` is fine
                         }
                     }
-                    let (dest_boundary, mut operands) = read_f_operands(operand_encoding, word);
+                    let (dest_boundary, mut operands) = if operand_encoding == OperandEncodingF::None {
+                        (None, [Operand::None, Operand::None, Operand::None, Operand::None, Operand::None])
+                    } else {
+                        read_f_operands(operand_encoding, word)
+                    };
                     // quoth `fma - Floating-point Multiply Add`, fma.* with `f2` set to register
                     // `f0` is actually `fmpy`
                     // same `multiply-add` -> `multiply` applies for `xma` -> `xmpy`
@@ -1812,7 +1824,11 @@ impl Decoder<InstructionBundle> for InstDecoder {
                     } else {
                         word[0..6].load::<u8>()
                     };
-                    let (dest_boundary, operands) = read_b_operands(operand_encoding, word);
+                    let (dest_boundary, operands) = if operand_encoding == OperandEncodingB::None {
+                        (None, [Operand::None, Operand::None, Operand::None, Operand::None, Operand::None])
+                    } else {
+                        read_b_operands(operand_encoding, word)
+                    };
                     Instruction {
                         opcode,
                         sf: None,
@@ -1827,7 +1843,11 @@ impl Decoder<InstructionBundle> for InstDecoder {
                 },
                 InstructionType::A => {
                     let (mut opcode, operand_encoding) = get_a_opcode_and_encoding(tag, word);
-                    let (dest_boundary, mut operands) = read_a_operands(operand_encoding, word);
+                    let (dest_boundary, mut operands) = if operand_encoding == OperandEncodingA::None {
+                        (None, [Operand::None, Operand::None, Operand::None, Operand::None, Operand::None])
+                    } else {
+                        read_a_operands(operand_encoding, word)
+                    };
                     if opcode == Opcode::Addl {
                         if operands[2] == Operand::GPRegister(GPRegister(0)) {
                             opcode = Opcode::Mov;
@@ -1851,7 +1871,11 @@ impl Decoder<InstructionBundle> for InstDecoder {
                 }
                 InstructionType::M => {
                     let (opcode, operand_encoding) = get_m_opcode_and_encoding(tag, word);
-                    let (dest_boundary, operands) = read_m_operands(operand_encoding, word);
+                    let (dest_boundary, operands) = if operand_encoding == OperandEncodingM::None {
+                        (None, [Operand::None, Operand::None, Operand::None, Operand::None, Operand::None])
+                    } else {
+                        read_m_operands(operand_encoding, word)
+                    };
                     let mut hint = Some(word[28..30].load::<u8>());
                     // some `M` instructions don't actually have a hint, fix up after the fact.
                     match (tag, word[30..36].load::<u8>()) {
@@ -4492,7 +4516,7 @@ fn get_a_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum OperandEncodingA {
     None,
     A1,
@@ -4507,7 +4531,7 @@ enum OperandEncodingA {
     A10,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum OperandEncodingI {
     None,
     I1,
@@ -4542,7 +4566,7 @@ enum OperandEncodingI {
     I30,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum OperandEncodingM {
     None,
     M1,
@@ -4609,7 +4633,7 @@ enum OperandEncodingB {
     B9,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum OperandEncodingF {
     None,
     F1,
@@ -4631,7 +4655,7 @@ enum OperandEncodingF {
 }
 
 /// the manual is weird. encodings from `L`-unit instructions are named `X1`, `X2`, and so on.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum OperandEncodingX {
     None,
     X1,

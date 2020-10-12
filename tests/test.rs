@@ -25,6 +25,15 @@ use yaxpeax_arch::Decoder;
 // 1000 2806 9811 5002 2000 4200 50a5 ff58
 
 #[test]
+fn test_invalid_instruction() {
+    let decoder = InstDecoder::default();
+
+    let expected = "[MII] (p07) mov r16=r0; (p09) mov r14=r0;; purple;;";
+    let data = [0xe3, 0x80, 0x00, 0x00, 0x00, 0x61, 0xe2, 0x00, 0x00, 0x00, 0x42, 0xc0, 0xe1, 0x80, 0x30, 0x00];
+    let inst = decoder.decode(data[..].iter().cloned()).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+}
+#[test]
 fn test_shr_shl_dep_ext() {
     // encoding of immediates for dep/ext and their pseudo-ops (shl/shr) is weird.
     // `pos` is recorded as `63 - the_actual_value`? `len` is encoded as the actual length minus
