@@ -1,4 +1,4 @@
-use yaxpeax_arch::{Arch, AddressDiff, Decoder, LengthedInstruction, NoColors, YaxColors};
+use yaxpeax_arch::{Arch, AddressDiff, Decoder, LengthedInstruction};
 use yaxpeax_arch::AddressBase;
 use bitvec::prelude::*;
 
@@ -333,8 +333,6 @@ pub enum Opcode {
     Tf_nz_or,
     Tf_z_or_andcm,
     Tf_nz_or_andcm,
-    Dep_z_imm,
-    Dep_imm,
     Dep_z,
     Extr,
     Shrp,
@@ -347,11 +345,11 @@ pub enum Opcode {
     Mix1_l,
     Psad1,
     Mux1,
-    Pshr2_u_var,
+    Pshr2_u,
     Pmpyshr2_u,
-    Pshr2_var,
+    Pshr2,
     Pmpyshr2,
-    Pshl1_var,
+    Pshl1,
     Pshr2_u_fixed,
     Pshr2_fixed,
     Popcnt,
@@ -368,9 +366,9 @@ pub enum Opcode {
     Pmpy2_l,
     Pshl2_fixed,
     Mux2,
-    Pshr4_u_var,
-    Pshr4_var,
-    Pshl4_var,
+    Pshr4_u,
+    Pshr4,
+    Pshl4,
     Mpy4,
     Mpyshl4,
     Pshr4_u_fixed,
@@ -381,9 +379,9 @@ pub enum Opcode {
     Mix4_r,
     Mix4_l,
     Pshl4_fixed,
-    Shr_u_var,
-    Shr_var,
-    Shl_var,
+    Shr_u,
+    Shr,
+    Shl,
 
     Break_b,
     Cover,
@@ -493,6 +491,9 @@ pub enum Opcode {
     Xma_l,
     Xma_hu,
     Xma_h,
+    Xmpy_l,
+    Xmpy_hu,
+    Xmpy_h,
     Fselect,
 
     Cmp4_eq,
@@ -561,7 +562,6 @@ impl fmt::Display for Opcode {
             Opcode::AddPlusOne => { write!(f, "addplusone") }
             Opcode::Sub => { write!(f, "sub") }
             Opcode::SubMinusOne => { write!(f, "subminusone") }
-            Opcode::Sub => { write!(f, "sub") }
             Opcode::And => { write!(f, "and") }
             Opcode::Andcm => { write!(f, "andcm") }
             Opcode::Or => { write!(f, "or") }
@@ -857,8 +857,6 @@ impl fmt::Display for Opcode {
             Opcode::Tf_nz_or => { write!(f, "tf.nz.or") }
             Opcode::Tf_z_or_andcm => { write!(f, "tf.z.or.andcm") }
             Opcode::Tf_nz_or_andcm => { write!(f, "tf.nz.or.andcm") }
-            Opcode::Dep_z_imm => { write!(f, "dep.z.imm") }
-            Opcode::Dep_imm => { write!(f, "dep.imm") }
             Opcode::Dep_z => { write!(f, "dep.z") }
             Opcode::Extr => { write!(f, "extr") }
             Opcode::Shrp => { write!(f, "shrp") }
@@ -871,11 +869,11 @@ impl fmt::Display for Opcode {
             Opcode::Mix1_l => { write!(f, "mix1.l") }
             Opcode::Psad1 => { write!(f, "psad1") }
             Opcode::Mux1 => { write!(f, "mux1") }
-            Opcode::Pshr2_u_var => { write!(f, "pshr2.u.var") }
+            Opcode::Pshr2_u => { write!(f, "pshr2.u") }
             Opcode::Pmpyshr2_u => { write!(f, "pmpyshr2.u") }
-            Opcode::Pshr2_var => { write!(f, "pshr2.var") }
+            Opcode::Pshr2 => { write!(f, "pshr2") }
             Opcode::Pmpyshr2 => { write!(f, "pmpyshr2") }
-            Opcode::Pshl1_var => { write!(f, "pshl1.var") }
+            Opcode::Pshl1 => { write!(f, "pshl1") }
             Opcode::Pshr2_u_fixed => { write!(f, "pshr2.u.fixed") }
             Opcode::Pshr2_fixed => { write!(f, "pshr2.fixed") }
             Opcode::Popcnt => { write!(f, "popcnt") }
@@ -892,9 +890,9 @@ impl fmt::Display for Opcode {
             Opcode::Pmpy2_l => { write!(f, "pmpy2.l") }
             Opcode::Pshl2_fixed => { write!(f, "pshl2.fixed") }
             Opcode::Mux2 => { write!(f, "mux2") }
-            Opcode::Pshr4_u_var => { write!(f, "pshr4.u.var") }
-            Opcode::Pshr4_var => { write!(f, "pshr4.var") }
-            Opcode::Pshl4_var => { write!(f, "pshl4.var") }
+            Opcode::Pshr4_u => { write!(f, "pshr4.u") }
+            Opcode::Pshr4 => { write!(f, "pshr4") }
+            Opcode::Pshl4 => { write!(f, "pshl4") }
             Opcode::Mpy4 => { write!(f, "mpy4") }
             Opcode::Mpyshl4 => { write!(f, "mpyshl4") }
             Opcode::Pshr4_u_fixed => { write!(f, "pshr4.u.fixed") }
@@ -905,9 +903,9 @@ impl fmt::Display for Opcode {
             Opcode::Mix4_r => { write!(f, "mix4.r") }
             Opcode::Mix4_l => { write!(f, "mix4.l") }
             Opcode::Pshl4_fixed => { write!(f, "pshl4.fixed") }
-            Opcode::Shr_u_var => { write!(f, "shr.u.var") }
-            Opcode::Shr_var => { write!(f, "shr.var") }
-            Opcode::Shl_var => { write!(f, "shl.var") }
+            Opcode::Shr_u => { write!(f, "shr.u") }
+            Opcode::Shr => { write!(f, "shr") }
+            Opcode::Shl => { write!(f, "shl") }
 
             Opcode::Break_b => { write!(f, "break.b") }
             Opcode::Cover => { write!(f, "cover") }
@@ -1017,6 +1015,9 @@ impl fmt::Display for Opcode {
             Opcode::Xma_l => { write!(f, "xma.l") }
             Opcode::Xma_hu => { write!(f, "xma.hu") }
             Opcode::Xma_h => { write!(f, "xma.h") }
+            Opcode::Xmpy_l => { write!(f, "xmpy.l") }
+            Opcode::Xmpy_hu => { write!(f, "xmpy.hu") }
+            Opcode::Xmpy_h => { write!(f, "xmpy.h") }
             Opcode::Fselect => { write!(f, "fselect") }
 
             Opcode::Cmp4_eq => { write!(f, "cmp4.eq") },
@@ -1096,18 +1097,33 @@ impl fmt::Display for Instruction {
                 self.operands[4].as_unsigned_imm(),
             );
         } else if let Opcode::Br_cond = self.opcode {
-            return write!(f, "br{}{}{}{} {}{}",
-                if self.predicate != 0 { ".cond" } else { "" },
-                ["", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
-                [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
-                ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
-                if let Operand::ImmI64(_) = self.operands[0] {
-                    "$+"
-                } else {
-                    ""
-                },
-                self.operands[0],
-            )
+            if self.predicate == 0 && self.operands[2].as_unsigned_imm() == 0 {
+                // if `qp == 0` and `bwh == .sptk`, this is an unconditional branch pseudo-op
+                return write!(f, "br{}{} {}{}",
+                    [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
+                    ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
+                    if let Operand::ImmI64(_) = self.operands[0] {
+                        "$+"
+                    } else {
+                        ""
+                    },
+                    self.operands[0],
+                )
+            } else {
+                // otherwise show the bwh field
+                return write!(f, "br{}{}{}{} {}{}",
+                    if self.predicate != 0 { ".cond" } else { "" },
+                    [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
+                    [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
+                    ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
+                    if let Operand::ImmI64(_) = self.operands[0] {
+                        "$+"
+                    } else {
+                        ""
+                    },
+                    self.operands[0],
+                )
+            }
         } else if let Opcode::Br_call = self.opcode {
             return write!(f, "br.call{}{}{} {}={}{}",
                 [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[3].as_unsigned_imm() as usize],
@@ -1183,6 +1199,14 @@ impl fmt::Display for Instruction {
                 self.operands[0],
                 self.operands[1],
             )
+        } else if self.opcode == Opcode::Dep_z {
+            if self.operands[2].as_unsigned_imm() == 64 - self.operands[3].as_unsigned_imm() {
+                return write!(f, "shl {}={},{}",
+                    self.operands[0],
+                    self.operands[1],
+                    self.operands[2],
+                )
+            }
         } else if self.opcode == Opcode::Extr {
             if self.operands[2].as_unsigned_imm() == 64 - self.operands[3].as_unsigned_imm() {
                 return write!(f, "shr {}={},{}",
@@ -1447,16 +1471,15 @@ pub enum Operand {
     ImmI64(i64),
     ImmU64(u64),
     Memory(GPRegister),
-//    Indirect(IndirectRegisterClass, GPRegister),
     PSR, // processor status register (see 3.3.2)
     PR, // predicate register (all 64 bits)
     IP, // is this an application register? distinct?
-//    ControlRegister(ControlRegister),
     ApplicationRegister(ApplicationRegister),
     BranchRegister(BranchRegister),
 }
 
 impl Operand {
+    #[allow(dead_code)]
     fn as_signed_imm(&self) -> i64 {
         if let Operand::ImmI64(i) = self {
             *i
@@ -1599,7 +1622,7 @@ impl Decoder<InstructionBundle> for InstDecoder {
             &instruction_bytes[46..87],
             &instruction_bytes[87..128],
         ];
-        let (instruction_types, stop_mask) = BUNDLE_TAGS[bundle_tag as usize].ok_or(DecodeError::BadBundle)?;
+        let (instruction_types, _) = BUNDLE_TAGS[bundle_tag as usize].ok_or(DecodeError::BadBundle)?;
 
         fn decode_l_instruction(word2: &BitSlice<Lsb0, u8>, word: &BitSlice<Lsb0, u8>) -> Instruction {
             let tag = word[37..41].load::<u8>();
@@ -1687,6 +1710,7 @@ impl Decoder<InstructionBundle> for InstDecoder {
                     let (dest_boundary, mut operands) = read_f_operands(operand_encoding, word);
                     // quoth `fma - Floating-point Multiply Add`, fma.* with `f2` set to register
                     // `f0` is actually `fmpy`
+                    // same `multiply-add` -> `multiply` applies for `xma` -> `xmpy`
                     if operands[3] == Operand::FloatRegister(FloatRegister(0)) {
                         if opcode == Opcode::Fma {
                             if operands[2] == Operand::FloatRegister(FloatRegister(1)) {
@@ -1715,6 +1739,15 @@ impl Decoder<InstructionBundle> for InstDecoder {
                                 opcode = Opcode::Fmpy_d;
                                 operands[3] = Operand::None;
                             }
+                        } else if opcode == Opcode::Xma_l {
+                            opcode = Opcode::Xmpy_l;
+                            operands[3] = Operand::None;
+                        } else if opcode == Opcode::Xma_h {
+                            opcode = Opcode::Xmpy_h;
+                            operands[3] = Operand::None;
+                        } else if opcode == Opcode::Xma_hu {
+                            opcode = Opcode::Xmpy_hu;
+                            operands[3] = Operand::None;
                         }
                     }
                     Instruction {
@@ -1752,7 +1785,6 @@ impl Decoder<InstructionBundle> for InstDecoder {
                 },
                 InstructionType::A => {
                     let (mut opcode, operand_encoding) = get_a_opcode_and_encoding(tag, word);
-                    eprintln!("opcode, encoding: A({})/{:?}", opcode, operand_encoding);
                     let (dest_boundary, mut operands) = read_a_operands(operand_encoding, word);
                     if opcode == Opcode::Addl {
                         if operands[2] == Operand::GPRegister(GPRegister(0)) {
@@ -1804,7 +1836,7 @@ impl Decoder<InstructionBundle> for InstDecoder {
                     Instruction {
                         opcode,
                         sf: None,
-                        hint: None,
+                        hint,
                         predicate: word[0..6].load::<u8>(),
                         dest_boundary,
                         operands,
@@ -1879,14 +1911,15 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
             let immc = word[22..27].load::<u64>();
             let i = word[36] as u64;
             let imm41 = word2[0..41].load::<u64>();
-            // TODO: might be right, i, c, and imm41 may be mixed up.
+            // TODO: might be right, i, c, and imm41 may be mixed up. inferred from testcases in
+            // `test_mlx_bundle`
             let imm =
                 imm7b +
                 (immd << 7) +
                 (immc << 16) +
-                (i << 21) +
-                (ic << 22) +
-                (imm41 << 23);
+                (ic << 21) +
+                (imm41 << 22) +
+                (i << 63);
             two_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
@@ -1898,10 +1931,10 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
             if btype != 0 {
                 // unclear what happens. invalid instruction?
             }
-            let p = word[12];
+            let _p = word[12];
             let imm20b = word[13..33].load::<u64>();
-            let wh = word[33..35].load::<u64>();
-            let d = word[35];
+            let _wh = word[33..35].load::<u64>();
+            let _d = word[35];
             let i = word[36];
             let imm39 = word2[2..41].load::<u64>();
             // TODO: this is certainly assembled incorrectly
@@ -1910,10 +1943,10 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
         }
         X4 => {
             let b1 = word[6..9].load::<u8>();
-            let p = word[12];
+            let _p = word[12];
             let imm20b = word[13..33].load::<u64>();
-            let wh = word[33..35].load::<u64>();
-            let d = word[35];
+            let _wh = word[33..35].load::<u64>();
+            let _d = word[35];
             let i = word[36];
             let imm39 = word2[2..41].load::<u64>();
             // TODO: this is certainly assembled incorrectly
@@ -2021,25 +2054,23 @@ fn read_b_operands(encoding: OperandEncodingB, word: &BitSlice<Lsb0, u8>) -> (Op
         }
         B6 => {
             let timm7a = word[6..13].load::<u32>();
-            // TODO: missing some bits
-            // TODO: sign extend?
             let imm20b = word[13..33].load::<u32>();
             let wh = word[3..5].load::<u8>();
             let t2e = word[33..35].load::<u32>();
             let tag = (t2e << 7) + timm7a;
             let ih = word[33..35].load::<u8>();
-            let s = word[36] as u8;
+            let s = word[36] as u32;
+            let imm = (((s << 20) + imm20b) << 11) >> 11;
             four_op(
                 Option::None,
-                Operand::ImmI64(imm20b as i64),
+                Operand::ImmI64(imm as i64),
                 Operand::ImmU64(tag as u64),
                 Operand::ImmU64(ih as u64),
-                Operand::ImmU64(s as u64),
+                Operand::ImmU64(wh as u64),
             )
         }
         B7 => {
             let timm7a = word[6..13].load::<u32>();
-            // TODO: missing some bits
             let b2 = word[13..16].load::<u8>();
             let wh = word[3..5].load::<u8>();
             let t2e = word[33..35].load::<u32>();
@@ -2385,8 +2416,8 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
         I12 => {
             let r1 = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
-            let cpos = word[20..26].load::<u8>();
-            let len = word[27..33].load::<u8>();
+            let cpos = 63 - word[20..26].load::<u8>();
+            let len = word[27..33].load::<u8>() + 1; // `The len immediate is encoded as len minus 1 in the instruction.`
             four_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
@@ -2399,8 +2430,8 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let imm7b = word[13..20].load::<u8>();
             let imm = (((word[36] as u8) << 7) + imm7b) as i8;
-            let cpos = word[20..26].load::<u8>();
-            let len = word[27..33].load::<u8>();
+            let cpos = 63 - word[20..26].load::<u8>();
+            let len = word[27..33].load::<u8>() + 1; // `The len immediate is encoded as len minus 1 in the instruction.`
             four_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
@@ -2413,8 +2444,8 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let imm = word[36] as u8;
             let r3 = word[20..27].load::<u8>();
-            let cpos = word[14..20].load::<u8>();
-            let len = word[27..33].load::<u8>();
+            let cpos = 63 - word[14..20].load::<u8>();
+            let len = word[27..33].load::<u8>() + 1; // `The len immediate is encoded as len minus 1 in the instruction.`
             (
                 Some(0),
                 [
@@ -2430,7 +2461,7 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let len = word[27..31].load::<u8>() + 1;
+            let len = word[27..31].load::<u8>() + 1; // `The len immediate is encoded as len minus 1 in the instruction.`
             let cpos = 63 - word[31..37].load::<u8>(); // not sure if this is accurate? makes the dep r14=r18 test pass...
             (
                 Some(0),
@@ -3415,9 +3446,9 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 if word[26] {
                     match index {
                         0 => TABLE4_23[table4_23_index as usize],
-                        1 => (Dep_z_imm, I13),
+                        1 => (Dep_z, I13),
                         2 => (Purple, None),
-                        3 => (Dep_imm, I14),
+                        3 => (Dep, I14),
                         _ => { unreachable!() },
                     }
                 } else {
@@ -3425,7 +3456,7 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                         0 => TABLE4_23[table4_23_index as usize],
                         1 => (Dep_z, I12),
                         2 => (Purple, None),
-                        3 => (Dep_imm, I14),
+                        3 => (Dep, I14),
                         _ => { unreachable!() },
                     }
                 }
@@ -3486,8 +3517,8 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
 
                 // `Table 4-18 Multimedia Opcode 7 Size 2 2-bit Opcode Extensions`
                 const TABLE4_18: [(Opcode, OperandEncodingI); 64] = [
-                    (Pshr2_u_var, I5), (Pmpyshr2_u, I1), (Pshr2_var, I5), (Pmpyshr2, I1),
-                    (Pshl1_var, I7), (Pmpyshr2_u, I1), (Purple, None), (Pmpyshr2, I1),
+                    (Pshr2_u, I5), (Pmpyshr2_u, I1), (Pshr2, I5), (Pmpyshr2, I1),
+                    (Pshl1, I7), (Pmpyshr2_u, I1), (Purple, None), (Pmpyshr2, I1),
                     (Purple, None), (Pmpyshr2_u, I1), (Purple, None), (Pmpyshr2, I1),
                     (Purple, None), (Pmpyshr2_u, I1), (Purple, None), (Pmpyshr2, I1),
                     (Purple, None), (Pshr2_u_fixed, I6), (Purple, None), (Pshr2_fixed, I6),
@@ -3506,8 +3537,8 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
 
                 // `Table 4-19 Multimedia Opcode 7 Size 4 2-bit Opcode Extensions`
                 const TABLE4_19: [(Opcode, OperandEncodingI); 64] = [
-                    (Pshr4_u_var, I5), (Purple, None), (Pshr4_var, I5), (Purple, None),
-                    (Pshl4_var, I7), (Purple, None), (Purple, None), (Purple, None),
+                    (Pshr4_u, I5), (Purple, None), (Pshr4, I5), (Purple, None),
+                    (Pshl4, I7), (Purple, None), (Purple, None), (Purple, None),
                     (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                     (Purple, None), (Mpy4, I2), (Purple, None), (Mpyshl4, I2),
                     (Pshr4_u_fixed, I6), (Purple, None), (Pshr4_fixed, I6), (Purple, None),
@@ -3525,8 +3556,8 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 ];
 
                 const TABLE4_20: [(Opcode, OperandEncodingI); 64] = [
-                    (Shr_u_var, I5), (Purple, None), (Shr_var, I5), (Purple, None),
-                    (Shl_var, I7), (Purple, None), (Purple, None), (Purple, None),
+                    (Shr_u, I5), (Purple, None), (Shr, I5), (Purple, None),
+                    (Shl, I7), (Purple, None), (Purple, None), (Purple, None),
                     (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                     (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                     (Purple, None), (Purple, None), (Purple, None), (Purple, None),
