@@ -1,0 +1,8 @@
+## 0.1.1
+
+actually decodeinvalid instructions.
+show negative ip-relative immediates by `$-const` rather than `$+-const`.
+
+## 0.1.0
+
+write a decoder.
