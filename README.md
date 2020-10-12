@@ -1,8 +1,8 @@
 ## yaxpeax-ia64
 
-ia64 decoder implemented as part of the yaxpeax project.
+ia64 (itanium) decoder implemented as part of the yaxpeax project.
 
-`yaxpeax-ia64` implements traits provided by `yaxpeax-arch`, which are likely how you want to use this library from Rust.
+`yaxpeax-ia64` implements traits provided by `yaxpeax-arch`, which are likely how you want to use this library from Rust. `yaxpeax-ia64` does not (yet?) know about ia-32/x86 code. for x86, see `yaxpeax-x86`'s `protected_mode` module, which is what `yaxpeax-ia64` would likely use anyway.
 
 implementation is heavily derived from the manual [`itanium-architecture-vol-1-2-3-4-reference-set-manual.pdf`](https://www.intel.com/content/dam/doc/manual/itanium-architecture-vol-1-2-3-4-reference-set-manual.pdf), as of 2019-09-07. `sha256: 705d2fc04ab378568eddb6bac4ee6974b6224b8efb5f73606f964f4a86e22955`.
 
@@ -35,4 +35,4 @@ if you would like to use `yaxpeax-ia64` in a `no-std` configuration:
 * rust doesn't even target ia64 as a tier 3 platform, are you trying to get C bindings? that would be good to specify too
 
 ### exists?
-yeah i'm surprised too. the only other disassemblers seem to be the one in GNU binutils and possibly one in `qemu-ia64`, but i'm not sure about the latter.
+yeah i'm surprised too. the only other itanium disassemblers seem to be the one in GNU binutils and possibly one in `qemu-ia64`, but i'm not sure about the latter.
