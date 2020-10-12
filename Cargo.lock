@@ -62,7 +62,7 @@ dependencies = [
 
 [[package]]
 name = "yaxpeax-ia64"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bitvec",
  "yaxpeax-arch",

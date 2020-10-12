@@ -1091,8 +1091,12 @@ impl fmt::Display for Instruction {
                 return write!(f, "br{}{} {}{}",
                     [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
                     ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
-                    if let Operand::ImmI64(_) = self.operands[0] {
-                        "$+"
+                    if let Operand::ImmI64(imm) = self.operands[0] {
+                        if imm >= 0 {
+                            "$+"
+                        } else {
+                            "$"
+                        }
                     } else {
                         ""
                     },
@@ -1105,8 +1109,12 @@ impl fmt::Display for Instruction {
                     [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
                     [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
                     ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
-                    if let Operand::ImmI64(_) = self.operands[0] {
-                        "$+"
+                    if let Operand::ImmI64(imm) = self.operands[0] {
+                        if imm >= 0 {
+                            "$+"
+                        } else {
+                            "$"
+                        }
                     } else {
                         ""
                     },
@@ -1119,8 +1127,12 @@ impl fmt::Display for Instruction {
                 [".few", ".many"][self.operands[2].as_unsigned_imm() as usize],
                 ["", ".clr"][self.operands[4].as_unsigned_imm() as usize],
                 self.operands[0],
-                if let Operand::ImmI64(_) = self.operands[1] {
-                    "$+"
+                if let Operand::ImmI64(imm) = self.operands[1] {
+                    if imm >= 0 {
+                        "$+"
+                    } else {
+                        "$"
+                    }
                 } else {
                     ""
                 },
@@ -1131,8 +1143,12 @@ impl fmt::Display for Instruction {
                 [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
                 [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
                 ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
-                if let Operand::ImmI64(_) = self.operands[0] {
-                    "$+"
+                if let Operand::ImmI64(imm) = self.operands[0] {
+                    if imm >= 0 {
+                        "$+"
+                    } else {
+                        "$"
+                    }
                 } else {
                     ""
                 },
@@ -1143,8 +1159,12 @@ impl fmt::Display for Instruction {
                 [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
                 [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
                 ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
-                if let Operand::ImmI64(_) = self.operands[0] {
-                    "$+"
+                if let Operand::ImmI64(imm) = self.operands[0] {
+                    if imm >= 0 {
+                        "$+"
+                    } else {
+                        "$"
+                    }
                 } else {
                     ""
                 },
@@ -1155,8 +1175,12 @@ impl fmt::Display for Instruction {
                 [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
                 [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
                 ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
-                if let Operand::ImmI64(_) = self.operands[0] {
-                    "$+"
+                if let Operand::ImmI64(imm) = self.operands[0] {
+                    if imm >= 0 {
+                        "$+"
+                    } else {
+                        "$"
+                    }
                 } else {
                     ""
                 },
@@ -1167,8 +1191,12 @@ impl fmt::Display for Instruction {
                 [".sptk", ".spnt", ".dptk", ".dpnt"][self.operands[2].as_unsigned_imm() as usize],
                 [".few", ".many"][self.operands[1].as_unsigned_imm() as usize],
                 ["", ".clr"][self.operands[3].as_unsigned_imm() as usize],
-                if let Operand::ImmI64(_) = self.operands[0] {
-                    "$+"
+                if let Operand::ImmI64(imm) = self.operands[0] {
+                    if imm >= 0 {
+                        "$+"
+                    } else {
+                        "$"
+                    }
                 } else {
                     ""
                 },
