@@ -1261,17 +1261,24 @@ impl Default for InstructionBundle {
 }
 impl fmt::Display for InstructionBundle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let stops = if let Some((types, stops)) = BUNDLE_TAGS[self.bundle_tag as usize] {
+        let (stops, types) = if let Some((types, stops)) = BUNDLE_TAGS[self.bundle_tag as usize] {
             write!(f, "[{}{}{}]", types[0], types[1], types[2])?;
-            [(stops & 0b100) > 0, (stops & 0b010) > 0, (stops & 0b001) > 0]
+            ([(stops & 0b100) > 0, (stops & 0b010) > 0, (stops & 0b001) > 0], types)
         } else {
             return write!(f, "tag: invalid ({})", self.bundle_tag);
         };
-        write!(f, " {}{}; {}{}; {}{}",
-            &self.instructions[0], if stops[0] { ";" } else { "" },
-            &self.instructions[1], if stops[1] { ";" } else { "" },
-            &self.instructions[2], if stops[2] { ";;" } else { "" },
-        )
+        if types[2] == InstructionType::X {
+            write!(f, " {}{}; {}{}",
+                &self.instructions[0], if stops[0] { ";" } else { "" },
+                &self.instructions[1], if stops[1] { ";;" } else { "" },
+            )
+        } else {
+            write!(f, " {}{}; {}{}; {}{}",
+                &self.instructions[0], if stops[0] { ";" } else { "" },
+                &self.instructions[1], if stops[1] { ";" } else { "" },
+                &self.instructions[2], if stops[2] { ";;" } else { "" },
+            )
+        }
     }
 }
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -1594,7 +1601,7 @@ impl Decoder<InstructionBundle> for InstDecoder {
         ];
         let (instruction_types, stop_mask) = BUNDLE_TAGS[bundle_tag as usize].ok_or(DecodeError::BadBundle)?;
 
-        fn decode_l_instruction(word: &BitSlice<Lsb0, u8>, word2: &BitSlice<Lsb0, u8>) -> Instruction {
+        fn decode_l_instruction(word2: &BitSlice<Lsb0, u8>, word: &BitSlice<Lsb0, u8>) -> Instruction {
             let tag = word[37..41].load::<u8>();
 
             let (opcode, operand_encoding) = get_l_opcode_and_encoding(tag, word);
@@ -1867,12 +1874,19 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
         X2 => {
             let r1 = word[6..13].load::<u8>();
             let imm7b = word[13..20].load::<u64>();
-            let ic = word[21];
-            let immdc = word[22..36].load::<u64>();
-            let i = word[36];
+            let ic = word[21] as u64;
+            let immd = word[27..36].load::<u64>();
+            let immc = word[22..27].load::<u64>();
+            let i = word[36] as u64;
             let imm41 = word2[0..41].load::<u64>();
-            // TODO: this is certainly assembled incorrectly
-            let imm = (imm41 << 21) + ((i as u64) << 20) + imm7b + immdc + (ic as u64);
+            // TODO: might be right, i, c, and imm41 may be mixed up.
+            let imm =
+                imm7b +
+                (immd << 7) +
+                (immc << 16) +
+                (i << 21) +
+                (ic << 22) +
+                (imm41 << 23);
             two_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
@@ -2416,8 +2430,8 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let r2 = word[13..20].load::<u8>();
             let r3 = word[20..27].load::<u8>();
-            let len = word[27..31].load::<u8>();
-            let cpos = word[31..37].load::<u8>();
+            let len = word[27..31].load::<u8>() + 1;
+            let cpos = 63 - word[31..37].load::<u8>(); // not sure if this is accurate? makes the dep r14=r18 test pass...
             (
                 Some(0),
                 [
@@ -2905,8 +2919,8 @@ fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<Lsb0, u8>) -> (Op
             three_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
-                Operand::GPRegister(GPRegister(r3)),
                 Operand::ImmI64(imm as i64),
+                Operand::GPRegister(GPRegister(r3)),
             )
         },
         A4 => {

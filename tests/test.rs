@@ -11,6 +11,15 @@ fn test_addl_imm() {
     assert_eq!(format!("{}", inst), expected);
 }
 #[test]
+fn test_mlx_bundle() {
+    let decoder = InstDecoder::default();
+
+    let expected = "[MLX] alloc r34=ar.pfs,5,5,0; movl r32=0xfffffffffffff5f8;;";
+    let data = [0x05, 0x10, 0x15, 0x0a, 0x80, 0xc5, 0xff, 0xff, 0xff, 0xff, 0x7f, 0x00, 0x84, 0xf7, 0xaf, 0x6f];
+    let inst = decoder.decode(data[..].iter().cloned()).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+}
+#[test]
 fn test_a_bundle() {
 // from elf64-ia64-vms.c
 // [MMI] addl r15=0,r1;;
