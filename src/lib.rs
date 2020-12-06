@@ -2669,8 +2669,8 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
             let r1 = word[6..13].load::<u8>();
             let x6 = word[27..33].load::<u8>();
             let src = match x6 {
-                30 => Operand::IP,
-                33 => Operand::PR,
+                0x30 => Operand::IP,
+                0x33 => Operand::PR,
                 _ => {
                     // TODO: what does a bad I25 x6 get you? nop?
                     Operand::None

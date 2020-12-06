@@ -39,6 +39,15 @@ fn test_invalid_instruction() {
     assert_eq!(format!("{}", inst), expected);
 }
 #[test]
+fn test_ad_hoc() {
+    let decoder = InstDecoder::default();
+
+    let expected = "[MII] nop.m 0x0; mov r2=ip;; addl r2=0x40,r2;;";
+    let data = [0x03, 0x00, 0x00, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x60, 0x00, 0x40, 0x00, 0x14, 0x00, 0x90];
+    let inst = decoder.decode(data[..].iter().cloned()).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+}
+#[test]
 fn test_shr_shl_dep_ext() {
     // encoding of immediates for dep/ext and their pseudo-ops (shl/shr) is weird.
     // `pos` is recorded as `63 - the_actual_value`? `len` is encoded as the actual length minus
