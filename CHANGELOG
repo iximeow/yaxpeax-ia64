@@ -1,3 +1,9 @@
+## 0.1.2
+
+non-temporal hint selection (`.nt1`, `.nt2`, `.nt3`) was off by one and could panic on valid inputs
+`I-Unit` operand form `I25` extension bits were incorrectly transcribed from the manual
+- as a result, both `mov <reg>=ip` and `mov <reg>=pr` would decode incorrectly
+
 ## 0.1.1
 
 actually decodeinvalid instructions.
