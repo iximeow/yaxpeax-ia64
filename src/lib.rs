@@ -1249,7 +1249,7 @@ impl fmt::Display for Instruction {
             // hint bits of `00` indicate no prefetch hint
             if hint != 0 {
                 f.write_str(
-                    [".nt1", ".nt2", ".nt3"][hint as usize]
+                    [".nt1", ".nt2", ".nt3"][hint as usize - 1]
                 )?;
             }
         }
