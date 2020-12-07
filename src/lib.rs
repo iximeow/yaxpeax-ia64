@@ -3953,23 +3953,11 @@ fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
             if x3 == 0 {
                 // `Table 4-43 System/Memory Management 4-bit+2-bit Ext`
                 const TABLE4_43: [(Opcode, OperandEncodingM); 64] = [
-                    (Break_m, M37), (Invala, M24), (Fwb, M24), (Srlz_d, M24),
                     // `1-bit Ext (Table 4-46)` is handled independently
-                    (Purple, None), (Purple, None), (Purple, None), (Srlz_i, M24),
-                    (Purple, None), (Invala_e_int, M26), (Mf, M24), (Purple, None),
-                    (Purple, None), (Invala_e_fp, M27), (Mf_a, M24), (Sync_i, M24),
-                    (Sum, M44), (Sum, M44), (Sum, M44), (Sum, M44),
-                    (Rum, M44), (Rum, M44), (Rum, M44), (Rum, M44),
-                    (Ssm, M44), (Ssm, M44), (Ssm, M44), (Ssm, M44),
-                    (Rsm, M44), (Rsm, M44), (Rsm, M44), (Rsm, M44),
-                    (Purple, None), (Purple, None), (Mov_m, M30), (Purple, None),
-                    (Purple, None), (Purple, None), (Purple, None), (Purple, None),
-                    (Loadrs, M25), (Purple, None), (Purple, None), (Purple, None),
-                    (Purple, None), (Purple, None), (Purple, None), (Purple, None),
-                    (Flushrs, M25), (Purple, None), (Purple, None), (Purple, None),
-                    (Purple, None), (Purple, None), (Purple, None), (Purple, None),
-                    (Purple, None), (Purple, None), (Purple, None), (Purple, None),
-                    (Purple, None), (Purple, None), (Purple, None), (Purple, None),
+                    (Break_m, M37), (Purple, None), (Purple, None), (Purple, None), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Purple, None), (Purple, None), (Loadrs, M25),  (Purple, None), (Flushrs, M25), (Purple, None), (Purple, None), (Purple, None),
+                    (Invala, M24), (Purple, None), (Invala_e_int, M26), (Invala_e_fp, M27), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
+                    (Fwb, M24), (Purple, None), (Mf, M24), (Mf_a, M24), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Mov_m, M30), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), 
+                    (Srlz_d, M24), (Srlz_i, M24),  (Purple, None), (Sync_i, M24), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                 ];
                 let index = word[27..33].load::<u8>();
                 if index == 0b00001 {
