@@ -1426,6 +1426,7 @@ pub enum IndirectionReg {
     Dtr,
     Ibr,
     Itr,
+    Msr,
     Pkr,
     Pmc,
     Pmd,
@@ -1440,6 +1441,7 @@ impl fmt::Display for IndirectionReg {
             Dtr => write!(f, "dtr"),
             Ibr => write!(f, "ibr"),
             Itr => write!(f, "itr"),
+            Msr => write!(f, "msr"),
             Pkr => write!(f, "pkr"),
             Pmc => write!(f, "pmc"),
             Pmd => write!(f, "pmd"),
@@ -3194,6 +3196,7 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
                 0x03 => IndirectionReg::Pkr,
                 0x04 => IndirectionReg::Pmc,
                 0x05 => IndirectionReg::Pmd,
+                0x06 => IndirectionReg::Msr,
                 0x0e => IndirectionReg::Dtr,
                 0x0f => IndirectionReg::Itr,
                 _ => { return one_op(false, Operand::None); }
@@ -3214,15 +3217,16 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
                 0x12 => IndirectionReg::Ibr,
                 0x13 => IndirectionReg::Pkr,
                 0x14 => IndirectionReg::Pmc,
-                0x15 => IndirectionReg::Cpuid,
-                0x17 => IndirectionReg::Pmd,
+                0x15 => IndirectionReg::Pmd,
+                0x16 => IndirectionReg::Msr,
+                0x17 => IndirectionReg::Cpuid,
                 _ => { return one_op(false, Operand::None); }
             };
-            let r2 = word[13..20].load::<u8>();
+            let r1 = word[6..13].load::<u8>();
             let r3 = word[20..27].load::<u8>();
             two_op(
                 Some(0),
-                Operand::GPRegister(GPRegister(r2)),
+                Operand::GPRegister(GPRegister(r1)),
                 Operand::Indirection(ind, GPRegister(r3)),
             )
         }
@@ -3988,9 +3992,18 @@ fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
             // `Table 4-44 Opcode 1 System/Memory Management 3-bit Opcode Extensions`
             if x3 == 0 {
                 // `Table 4-45 System/Memory Management 6-bit Ext`
+
+                // Indices 0x06 and 0x16 are unallocated within the table,
+                // however these correspond to MSR store/load respectively and
+                // follow the same format as other indirect register stores and
+                // loads. These instructions appear in the 460GX system
+                // firmware and are decoded by IDA. These instructions are also
+                // referenced in a
+                // [UEFI Itanium platform assembler source file](https://github.com/open-estuary/uefi/blob/af332aea6e16dec610a76da9279d4cbfe0e87cc3/MdePkg/Library/BaseLib/Ipf/AccessMsr.s)
+                // for accessing MSRs which uses similar syntax.
                 const TABLE4_45: [(Opcode, OperandEncodingM); 64] = [
-                    (Mov, M42), (Mov, M42), (Mov, M42), (Mov, M43), (Mov, M42), (Mov, M42), (Purple, None), (Purple, None), (Purple, None), (Ptc_l, M45), (Ptc_g, M45), (Ptc_ga, M45), (Ptr_d, M45), (Ptr_i, M45), (Itr_d, M42), (Itr_i, M42),
-                    (Mov, M43),(Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Purple, None), (Mov, M43), (Probe_r, M39), (Probe_w, M39), (Thash, M46), (Ttag, M46), (Purple, None), (Purple, None), (Tpa, M46), (Tak, M46),
+                    (Mov, M42), (Mov, M42), (Mov, M42), (Mov, M43), (Mov, M42), (Mov, M42), (Mov, M42), (Purple, None), (Purple, None), (Ptc_l, M45), (Ptc_g, M45), (Ptc_ga, M45), (Ptr_d, M45), (Ptr_i, M45), (Itr_d, M42), (Itr_i, M42),
+                    (Mov, M43),(Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Probe_r, M39), (Probe_w, M39), (Thash, M46), (Ttag, M46), (Purple, None), (Purple, None), (Tpa, M46), (Tak, M46),
                     (Purple, None), (Mov, M36), (Mov_m, M31), (Purple, None), (Mov, M33), (Mov, M36), (Purple, None), (Purple, None), (Purple, None), (Mov, M35), (Mov_m, M29), (Purple, None), (Mov, M32), (Mov, M35), (Itc_d, M41), (Itc_i, M41),
                     (Fc, M28),(Probe_rw_fault, M40), (Probe_r_fault, M40), (Probe_w_fault, M40), (Ptc_e, M47), (Purple, None), (Purple, None), (Purple, None), (Probe_r, M38), (Probe_w, M38), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                 ];
