@@ -4002,7 +4002,7 @@ fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                 // [UEFI Itanium platform assembler source file](https://github.com/open-estuary/uefi/blob/af332aea6e16dec610a76da9279d4cbfe0e87cc3/MdePkg/Library/BaseLib/Ipf/AccessMsr.s)
                 // for accessing MSRs which uses similar syntax.
                 const TABLE4_45: [(Opcode, OperandEncodingM); 64] = [
-                    (Mov, M42), (Mov, M42), (Mov, M42), (Mov, M43), (Mov, M42), (Mov, M42), (Mov, M42), (Purple, None), (Purple, None), (Ptc_l, M45), (Ptc_g, M45), (Ptc_ga, M45), (Ptr_d, M45), (Ptr_i, M45), (Itr_d, M42), (Itr_i, M42),
+                    (Mov, M42), (Mov, M42), (Mov, M42), (Mov, M42), (Mov, M42), (Mov, M42), (Mov, M42), (Purple, None), (Purple, None), (Ptc_l, M45), (Ptc_g, M45), (Ptc_ga, M45), (Ptr_d, M45), (Ptr_i, M45), (Itr_d, M42), (Itr_i, M42),
                     (Mov, M43),(Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Mov, M43), (Probe_r, M39), (Probe_w, M39), (Thash, M46), (Ttag, M46), (Purple, None), (Purple, None), (Tpa, M46), (Tak, M46),
                     (Purple, None), (Mov, M36), (Mov_m, M31), (Purple, None), (Mov, M33), (Mov, M36), (Purple, None), (Purple, None), (Purple, None), (Mov, M35), (Mov_m, M29), (Purple, None), (Mov, M32), (Mov, M35), (Itc_d, M41), (Itc_i, M41),
                     (Fc, M28),(Probe_rw_fault, M40), (Probe_r_fault, M40), (Probe_w_fault, M40), (Ptc_e, M47), (Purple, None), (Purple, None), (Purple, None), (Probe_r, M38), (Probe_w, M38), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
