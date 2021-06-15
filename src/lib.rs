@@ -5,7 +5,7 @@
 //! [`itanium-architecture-vol-1-2-3-4-reference-set-manual.pdf`](https://www.intel.com/content/dam/doc/manual/itanium-architecture-vol-1-2-3-4-reference-set-manual.pdf)
 //! as of 2019-09-07. `sha256: 705d2fc04ab378568eddb6bac4ee6974b6224b8efb5f73606f964f4a86e22955`
 
-use yaxpeax_arch::{Arch, AddressDiff, Decoder, LengthedInstruction};
+use yaxpeax_arch::{Arch, AddressDiff, Decoder, LengthedInstruction, Reader, ReadError};
 use yaxpeax_arch::AddressBase;
 use bitvec::prelude::*;
 
@@ -16,6 +16,7 @@ use core::fmt;
 pub struct IA64;
 
 impl Arch for IA64 {
+    type Word = IA64InstWord;
     type Address = u64;
     type Instruction = InstructionBundle;
     type DecodeError = DecodeError;
@@ -1685,14 +1686,38 @@ const BUNDLE_TAGS: [Option<BundleDesc>; 32] = [
     None,
     None,
 ];
-impl Decoder<InstructionBundle> for InstDecoder {
+
+impl From<ReadError> for DecodeError {
+    fn from(read_err: ReadError) -> DecodeError {
+        match read_err {
+            ReadError::ExhaustedInput => DecodeError::ExhaustedInput,
+            ReadError::IOError(_) => DecodeError::ExhaustedInput,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct IA64InstWord([u8; 16]);
+impl IA64InstWord {
+    fn bytes(&self) -> &[u8; 16] {
+        &self.0
+    }
+}
+
+impl fmt::Display for IA64InstWord {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "{:02x?}", self.0)
+    }
+}
+
+impl Decoder<IA64> for InstDecoder {
     type Error = DecodeError;
 
-    fn decode_into<T: IntoIterator<Item=u8>>(&self, inst: &mut InstructionBundle, bytes: T) -> Result<(), Self::Error> {
-        let mut bytes_iter = bytes.into_iter();
+    fn decode_into<T: Reader<<IA64 as Arch>::Word>>(&self, inst: &mut InstructionBundle, bytes: &mut T) -> Result<(), Self::Error> {
+        let word = bytes.next()?;
         let mut instruction_bytes = bitarr![Lsb0, u8; 0u8; 128];
         for i in 0..0u64.wrapping_offset(InstructionBundle::min_size()).to_linear() {
-            instruction_bytes[(i * 8)..(i * 8 + 8)].store(bytes_iter.next().ok_or(DecodeError::ExhaustedInput)?);
+            instruction_bytes[(i * 8)..(i * 8 + 8)].store(word.bytes()[i]);
         }
 //        let instruction_bits = instruction_bytes.view_bits::<Lsb0>();
         let bundle_tag = instruction_bytes[0..5].load::<u8>();
@@ -1955,9 +1980,9 @@ impl Decoder<InstructionBundle> for InstDecoder {
         // remaining necessary  details
         Ok(())
     }
-    fn decode<T: IntoIterator<Item=u8>>(&self, bytes: T) -> Result<InstructionBundle, Self::Error> {
+    fn decode<T: Reader<<IA64 as Arch>::Word>>(&self, words: &mut T) -> Result<InstructionBundle, Self::Error> {
         let mut inst = InstructionBundle::default();
-        self.decode_into(&mut inst, bytes)?;
+        self.decode_into(&mut inst, words)?;
         Ok(inst)
     }
 }
