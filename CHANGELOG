@@ -1,3 +1,17 @@
+## 0.1.4
+
+update yaxpeax-arch to drop a dependency on termion
+
+update yaxpeax-arch to 0.2.x, involving a breaking change to decode APIs (sorry)
+
+## 0.1.3
+
+transpose Table 4-43 to fix decoding of `srlz.i`
+
+add MSR load/store, `M43` interpretation, cpuid indirection
+
+fix decoding of mov-to-PKR (table transcription error)
+
 ## 0.1.2
 
 non-temporal hint selection (`.nt1`, `.nt2`, `.nt3`) was off by one and could panic on valid inputs
