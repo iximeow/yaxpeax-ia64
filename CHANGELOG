@@ -1,8 +1,15 @@
+## 0.2.1
+
+* fix incorrect `yaxpeax_arch::Arch` impl for `std`-enabled builds
+  (DecodeError did not implement `std::error::Error` in those build environments)
+
+## 0.2.0
+
+update yaxpeax-arch to 0.2.x, involving a breaking change to decode APIs (sorry)
+
 ## 0.1.4
 
 update yaxpeax-arch to drop a dependency on termion
-
-update yaxpeax-arch to 0.2.x, involving a breaking change to decode APIs (sorry)
 
 ## 0.1.3
 
