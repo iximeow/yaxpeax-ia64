@@ -1307,6 +1307,32 @@ impl yaxpeax_arch::LengthedInstruction for InstructionBundle {
 }
 impl yaxpeax_arch::Instruction for InstructionBundle {
     fn well_defined(&self) -> bool {
+        // Alloc has some special rules that need to be checked.
+        let validate_alloc = |insn: &Instruction| {
+            let sof = insn.operands[2].as_unsigned_imm();
+            let sol = insn.operands[3].as_unsigned_imm();
+            let sor = insn.operands[4].as_unsigned_imm();
+
+            // Frame size cannot be bigger than 96 registers.
+            sof <= 95 &&
+            // Rotation size cannot be larger than frame.
+            (sor << 3) <= sof &&
+            // Local size cannot be larger than frame.
+            sol <= sof &&
+            // Alloc cannot be predicated.
+            insn.predicate() == 0
+        };
+
+        if self.instructions[0].opcode() == Opcode::Alloc && !validate_alloc(&self.instructions[0]) {
+            return false;
+        }
+
+        // If alloc is in slot 1, there must be a stop before it.
+        let stop_before_slot1 = BUNDLE_TAGS[self.bundle_tag as usize].map_or(false, |(_, stops)| stops & 0b100 != 0);
+        if self.instructions[1].opcode() == Opcode::Alloc && (!stop_before_slot1 || !validate_alloc(&self.instructions[1])) {
+            return false;
+        }
+
         true
     }
 }
