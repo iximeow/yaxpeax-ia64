@@ -2332,3 +2332,58 @@ fn test_indirection() {
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{}", inst), expected);
 }
+
+// alloc has special restrictions that need to be checked.
+#[test]
+fn test_alloc_restrictions() {
+    use yaxpeax_arch::Instruction;
+    let decoder = InstDecoder::default();
+
+    // size of frame cannot be greater than 96.
+    let expected = "[MMI] alloc r34=ar.pfs,127,5,0; break.m 0x0; break.i 0x0";
+    let data = [0x08, 0x10, 0xfd, 0x0b, 0x80, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    // size of rotation cannot be greater than size of frame.
+    let expected = "[MMI] alloc r34=ar.pfs,5,5,1; break.m 0x0; break.i 0x0";
+    let data = [0x08, 0x10, 0x15, 0x0a, 0x81, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    // size of locals cannot be greater than size of frame.
+    let expected = "[MMI] alloc r34=ar.pfs,5,6,0; break.m 0x0; break.i 0x0";
+    let data = [0x08, 0x10, 0x15, 0x0c, 0x80, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    // alloc cannot be predicated.
+    let expected = "[MMI] (p02) alloc r34=ar.pfs,5,5,0; break.m 0x0; break.i 0x0";
+    let data = [0x48, 0x10, 0x15, 0x0a, 0x80, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    // alloc cannot be in slot 1 of a bundle type without a stop before it.
+    let expected = "[MMI] break.m 0x0; alloc r34=ar.pfs,5,5,0; break.i 0x0";
+    let data = [0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x2a, 0x14, 0x00, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    // but alloc can be in slot 1 of a bundle type with a stop before it.
+    let expected = "[MMI] break.m 0x0;; alloc r34=ar.pfs,5,5,0; break.i 0x0";
+    let data = [0x0a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x2a, 0x14, 0x00, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(inst.well_defined());
+}
