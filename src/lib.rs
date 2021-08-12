@@ -1233,14 +1233,12 @@ impl fmt::Display for Instruction {
                     self.operands[2],
                 )
             }
-        } else if self.opcode == Opcode::Extr_u {
-            if self.operands[2].as_unsigned_imm() == 64 - self.operands[3].as_unsigned_imm() {
-                return write!(f, "shr.u {}={},{}",
-                    self.operands[0],
-                    self.operands[1],
-                    self.operands[2],
-                )
-            }
+        } else if self.opcode == Opcode::Extr_u && self.operands[2].as_unsigned_imm() == 64 - self.operands[3].as_unsigned_imm() {
+            return write!(f, "shr.u {}={},{}",
+                self.operands[0],
+                self.operands[1],
+                self.operands[2],
+            )
         }
         write!(f, "{}", self.opcode)?;
         if let Some(sf) = self.sf {
@@ -1260,12 +1258,10 @@ impl fmt::Display for Instruction {
             }
             if i == 0 {
                 write!(f, " {}", op)?;
+            } else if self.dest_boundary == Some((i - 1) as u8) {
+                write!(f, "={}", op)?;
             } else {
-                if self.dest_boundary == Some((i - 1) as u8) {
-                    write!(f, "={}", op)?;
-                } else {
-                    write!(f, ",{}", op)?;
-                }
+                write!(f, ",{}", op)?;
             }
         }
         Ok(())
@@ -1397,27 +1393,13 @@ impl fmt::Display for DecodeError {
 }
 impl yaxpeax_arch::DecodeError for DecodeError {
     fn data_exhausted(&self) -> bool {
-        if let DecodeError::ExhaustedInput = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, DecodeError::ExhaustedInput)
     }
     fn bad_opcode(&self) -> bool {
-        if let DecodeError::BadBundle = self {
-            true
-        } else if let DecodeError::BadOpcode = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, DecodeError::BadBundle | &DecodeError::BadOpcode)
     }
     fn bad_operand(&self) -> bool {
-        if let DecodeError::BadOperand = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, DecodeError::BadOperand)
     }
     fn description(&self) -> &'static str {
         match self {
@@ -1860,29 +1842,26 @@ impl Decoder<IA64> for InstDecoder {
                             if operands[2] == Operand::FloatRegister(FloatRegister(1)) {
                                 opcode = Opcode::Fnorm;
                                 operands[2] = Operand::None;
-                                operands[3] = Operand::None;
                             } else {
                                 opcode = Opcode::Fmpy;
-                                operands[3] = Operand::None;
                             }
+                            operands[3] = Operand::None;
                         } else if opcode == Opcode::Fma_s {
                             if operands[2] == Operand::FloatRegister(FloatRegister(1)) {
                                 opcode = Opcode::Fnorm_s;
                                 operands[2] = Operand::None;
-                                operands[3] = Operand::None;
                             } else {
                                 opcode = Opcode::Fmpy_s;
-                                operands[3] = Operand::None;
                             }
+                            operands[3] = Operand::None;
                         } else if opcode == Opcode::Fma_d {
                             if operands[2] == Operand::FloatRegister(FloatRegister(1)) {
                                 opcode = Opcode::Fnorm_d;
                                 operands[2] = Operand::None;
-                                operands[3] = Operand::None;
                             } else {
                                 opcode = Opcode::Fmpy_d;
-                                operands[3] = Operand::None;
                             }
+                            operands[3] = Operand::None;
                         } else if opcode == Opcode::Xma_l {
                             opcode = Opcode::Xmpy_l;
                             operands[3] = Operand::None;
@@ -1939,12 +1918,10 @@ impl Decoder<IA64> for InstDecoder {
                             opcode = Opcode::Mov;
                             operands[2] = Operand::None;
                         }
-                    } else if opcode == Opcode::Adds {
-                        if operands[1] == Operand::ImmI64(0) {
-                            opcode = Opcode::Mov;
-                            operands[1] = operands[2];
-                            operands[2] = Operand::None;
-                        }
+                    } else if opcode == Opcode::Adds && operands[1] == Operand::ImmI64(0) {
+                        opcode = Opcode::Mov;
+                        operands[1] = operands[2];
+                        operands[2] = Operand::None;
                     }
                     Instruction {
                         opcode,
@@ -1998,7 +1975,7 @@ impl Decoder<IA64> for InstDecoder {
 
         for ((i, word), ty) in instruction_words.iter().enumerate().zip(instruction_types.iter().cloned()) {
             if ty == InstructionType::L {
-                let instruction = decode_l_instruction(word, &instruction_words[i + 1]);
+                let instruction = decode_l_instruction(word, instruction_words[i + 1]);
                 inst.instructions[i] = instruction;
                 break;
             } else {
@@ -3871,23 +3848,21 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                         _ => { unreachable!() },
                     }
                 }
+            } else if word[13] {
+                match index {
+                    0 => TABLE4_23[table4_23_index as usize],
+                    1 => (Extr, I11),
+                    2 => (Purple, None),
+                    3 => (Shrp, I10),
+                    _ => { unreachable!() },
+                }
             } else {
-                if word[13] {
-                    match index {
-                        0 => TABLE4_23[table4_23_index as usize],
-                        1 => (Extr, I11),
-                        2 => (Purple, None),
-                        3 => (Shrp, I10),
-                        _ => { unreachable!() },
-                    }
-                } else {
-                    match index {
-                        0 => TABLE4_23[table4_23_index as usize],
-                        1 => (Extr_u, I11),
-                        2 => (Purple, None),
-                        3 => (Shrp, I10),
-                        _ => { unreachable!() },
-                    }
+                match index {
+                    0 => TABLE4_23[table4_23_index as usize],
+                    1 => (Extr_u, I11),
+                    2 => (Purple, None),
+                    3 => (Shrp, I10),
+                    _ => { unreachable!() },
                 }
             }
         },
@@ -3899,7 +3874,7 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
             } else {
                 // `Table 4-16 Multimedia and Variable Shift 1-bit Opcode Extensions`
                 // (`v_e == 0`, since `v_e == 1` parts of this table are all undefined)
-                const TABLE4_16: [&'static [(Opcode, OperandEncodingI); 64]; 4] = [
+                const TABLE4_16: [&[(Opcode, OperandEncodingI); 64]; 4] = [
                     &TABLE4_17,
                     &TABLE4_18,
                     &TABLE4_19,
@@ -4011,7 +3986,7 @@ fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
                     // `1-bit Ext (Table 4-46)` is handled independently
                     (Break_m, M37), (Purple, None), (Purple, None), (Purple, None), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Purple, None), (Purple, None), (Loadrs, M25),  (Purple, None), (Flushrs, M25), (Purple, None), (Purple, None), (Purple, None),
                     (Invala, M24), (Purple, None), (Invala_e_int, M26), (Invala_e_fp, M27), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
-                    (Fwb, M24), (Purple, None), (Mf, M24), (Mf_a, M24), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Mov_m, M30), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), 
+                    (Fwb, M24), (Purple, None), (Mf, M24), (Mf_a, M24), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Mov_m, M30), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                     (Srlz_d, M24), (Srlz_i, M24),  (Purple, None), (Sync_i, M24), (Sum, M44), (Rum, M44), (Ssm, M44), (Rsm, M44), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None), (Purple, None),
                 ];
                 let index = word[27..33].load::<u8>();
@@ -4186,7 +4161,7 @@ fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
         },
         6 => {
             // `Table 4-29 Floating-point Load/Store/Load Pair/Set FR 1-bit Opcode Extensions`
-            const TABLE4_29: [&'static [(Opcode, OperandEncodingM); 64]; 4] = [
+            const TABLE4_29: [&[(Opcode, OperandEncodingM); 64]; 4] = [
                 &TABLE4_34,
                 &TABLE4_37,
                 &TABLE4_35,
