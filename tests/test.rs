@@ -1,5 +1,5 @@
 use yaxpeax_ia64::InstDecoder;
-use yaxpeax_arch::{Decoder, U8Reader};
+use yaxpeax_arch::{Decoder, Instruction, U8Reader};
 
 // from elf64-ia64-vms.c
 // 0x0b, 0x78, 0x00, 0x02, 0x00, 0x24, 0x00, 0x41, 0x3c, 0x70, 0x27, 0xc0, 0x01, 0x08, 0x00, 0x84
@@ -33,12 +33,14 @@ fn test_invalid_instruction() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
 
     let expected = "[MII] purple.nt3; break.i 0x0; break.i 0x0";
     let data = [0x00, 0x00, 0x00, 0x00, 0x0E, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
 }
 #[test]
 fn test_ad_hoc() {
@@ -2336,7 +2338,6 @@ fn test_indirection() {
 // alloc has special restrictions that need to be checked.
 #[test]
 fn test_alloc_restrictions() {
-    use yaxpeax_arch::Instruction;
     let decoder = InstDecoder::default();
 
     // size of frame cannot be greater than 96.
@@ -2386,4 +2387,59 @@ fn test_alloc_restrictions() {
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{}", inst), expected);
     assert!(inst.well_defined());
+}
+
+#[test]
+fn test_predication_not_allowed() {
+    let decoder = InstDecoder::default();
+
+    // B8 instructions cannot be predicated
+    let expected = "[BBB] (p01) cover; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[BBB] (p01) clrrb; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[BBB] (p01) clrrb.pr; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[BBB] (p01) rfi; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[BBB] (p01) bsw.0; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[BBB] (p01) bsw.1; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x00, 0x00, 0x00, 0x0d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[BBB] (p01) epc; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
 }

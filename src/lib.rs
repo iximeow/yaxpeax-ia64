@@ -1323,6 +1323,22 @@ impl yaxpeax_arch::Instruction for InstructionBundle {
             insn.predicate() == 0
         };
 
+        for insn in &self.instructions {
+            match insn.opcode {
+                // B8 family instructions cannot be predicated
+                Opcode::Cover | Opcode::Clrrb | Opcode::Clrrb_pr | Opcode::Rfi | Opcode::Bsw_0 | Opcode::Bsw_1 | Opcode::Epc => {
+                    if insn.predicate() != 0 {
+                        return false;
+                    }
+                },
+                // Undefined opcode regions
+                Opcode::Purple | Opcode::Cyan | Opcode::Brown | Opcode::White => {
+                    return false;
+                },
+                _ => {},
+            }
+        }
+
         if self.instructions[0].opcode() == Opcode::Alloc && !validate_alloc(&self.instructions[0]) {
             return false;
         }
