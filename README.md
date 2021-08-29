@@ -36,3 +36,7 @@ if you would like to use `yaxpeax-ia64` in a `no-std` configuration:
 
 ### exists?
 yeah i'm surprised too. the only other itanium disassemblers seem to be the one in GNU binutils and possibly one in `qemu-ia64`, but i'm not sure about the latter.
+
+additionally, there is the [`ski`](http://ski.sourceforge.net/) ia64 emulator by Hewlett-Packard, and since released as open-source. being an ia64 emulator, it includes an ia64 disassembler, and given the provenance of the project, it seems reasonable to believe it's trustworthy as well.
+
+one day, i would like to test `yaxpeax-ia64` against `ski` and `binutils`.
