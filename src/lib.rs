@@ -1266,7 +1266,7 @@ impl fmt::Display for Instruction {
         Ok(())
     }
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct InstructionBundle {
     bundle_tag: u8,
     instructions: [Instruction; 3],
@@ -1345,14 +1345,6 @@ impl yaxpeax_arch::Instruction for InstructionBundle {
         }
 
         true
-    }
-}
-impl Default for InstructionBundle {
-    fn default() -> Self {
-        InstructionBundle {
-            bundle_tag: 0,
-            instructions: Default::default(),
-        }
     }
 }
 impl fmt::Display for InstructionBundle {
