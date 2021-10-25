@@ -33,11 +33,11 @@ impl Default for Opcode {
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 #[allow(non_camel_case_types)]
 pub enum Opcode {
-    // TODO: what kind of no-op/undefined are these exactly
-    Purple,
-    Cyan,
-    Brown,
-    White,
+    // Undefined opcode regions come from manual page 3:299.
+    Purple, // Reserved if PR[qp] = 1
+    Cyan,   // Reserved if PR[qp] = 1
+    Brown,  // Reserved
+    White,  // Ignored; executes as nop (for hint space).
 
     Addp4,
     Adds,
@@ -1313,21 +1313,31 @@ impl yaxpeax_arch::Instruction for InstructionBundle {
             // Rotation size cannot be larger than frame.
             (sor << 3) <= sof &&
             // Local size cannot be larger than frame.
-            sol <= sof &&
-            // Alloc cannot be predicated.
-            insn.predicate() == 0
+            sol <= sof
         };
 
         for insn in &self.instructions {
             match insn.opcode {
-                // B8 family instructions cannot be predicated
-                Opcode::Cover | Opcode::Clrrb | Opcode::Clrrb_pr | Opcode::Rfi | Opcode::Bsw_0 | Opcode::Bsw_1 | Opcode::Epc => {
+                // Table 5-5 lists the "unpredicatable-instructions" instruction class, which is:
+                // - the B2 instruction format for br.cloop, br.ctop, br.cexit
+                Opcode::Br_cloop | Opcode::Br_cexit | Opcode::Br_ctop |
+                // - the B6 and B7 instruction format for brp. Note however that B6 and B7 use the qp section of opcode
+                //   to encode the prediction hint, so these are not included.
+                // - the B8 instruction format for bsw.0, bsw.1, clrrrb, clrrrb.pr, cover, epc, rfi, vmsw.0, vmsw.1
+                Opcode::Cover | Opcode::Clrrb | Opcode::Clrrb_pr | Opcode::Rfi | Opcode::Bsw_0 | Opcode::Bsw_1 | Opcode::Epc |
+                // - the M25 instruction format for flushrs, loadrs
+                Opcode::Flushrs | Opcode::Loadrs |
+                // - the M34 instruction format for alloc
+                Opcode::Alloc |
+                // - and br.ia.
+                Opcode::Br_ia => {
                     if insn.predicate() != 0 {
                         return false;
                     }
                 },
                 // Undefined opcode regions
-                Opcode::Purple | Opcode::Cyan | Opcode::Brown | Opcode::White => {
+                // Because Opcode::White instructions are defined to execute as `nop`, they are well-defined.
+                Opcode::Purple | Opcode::Cyan | Opcode::Brown => {
                     return false;
                 },
                 _ => {},
