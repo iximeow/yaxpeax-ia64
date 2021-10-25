@@ -2364,14 +2364,6 @@ fn test_alloc_restrictions() {
     assert_eq!(format!("{}", inst), expected);
     assert!(!inst.well_defined());
 
-    // alloc cannot be predicated.
-    let expected = "[MMI] (p02) alloc r34=ar.pfs,5,5,0; break.m 0x0; break.i 0x0";
-    let data = [0x48, 0x10, 0x15, 0x0a, 0x80, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-    let mut reader = U8Reader::new(&data[..]);
-    let inst = decoder.decode(&mut reader).unwrap();
-    assert_eq!(format!("{}", inst), expected);
-    assert!(!inst.well_defined());
-
     // alloc cannot be in slot 1 of a bundle type without a stop before it.
     let expected = "[MMI] break.m 0x0; alloc r34=ar.pfs,5,5,0; break.i 0x0";
     let data = [0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x2a, 0x14, 0x00, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00];
@@ -2392,6 +2384,28 @@ fn test_alloc_restrictions() {
 #[test]
 fn test_predication_not_allowed() {
     let decoder = InstDecoder::default();
+
+    // B2 instructions cannot be predicated
+    let expected = "[BBB] (p01) br.cloop.sptk.few $+0x0; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x28, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[BBB] (p01) br.cexit.sptk.few $+0x0; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x30, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[BBB] (p01) br.ctop.sptk.few $+0x0; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x38, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
 
     // B8 instructions cannot be predicated
     let expected = "[BBB] (p01) cover; break.b 0x0; break.b 0x0";
@@ -2438,6 +2452,37 @@ fn test_predication_not_allowed() {
 
     let expected = "[BBB] (p01) epc; break.b 0x0; break.b 0x0";
     let data = [0x36, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    // M25 instructions cannot be predicated.
+    let expected = "[MMI] (p01) flushrs; break.m 0x0; break.i 0x0";
+    let data = [0x28, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    let expected = "[MMI] (p01) loadrs; break.m 0x0; break.i 0x0";
+    let data = [0x28, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    // alloc cannot be predicated.
+    let expected = "[MMI] (p02) alloc r34=ar.pfs,5,5,0; break.m 0x0; break.i 0x0";
+    let data = [0x48, 0x10, 0x15, 0x0a, 0x80, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{}", inst), expected);
+    assert!(!inst.well_defined());
+
+    // br.ia cannot be predicated.
+    let expected = "[BBB] (p01) br.ia b0,0x0,0x0,0x0; break.b 0x0; break.b 0x0";
+    let data = [0x36, 0x08, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{}", inst), expected);
