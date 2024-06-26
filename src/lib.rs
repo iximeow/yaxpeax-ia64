@@ -24,19 +24,14 @@ impl Arch for IA64 {
     type Operand = Operand;
 }
 
-impl Default for Opcode {
-    fn default() -> Self {
-        Opcode::White
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, Default, PartialEq, Eq, Copy, Clone)]
 #[allow(non_camel_case_types)]
 pub enum Opcode {
     // Undefined opcode regions come from manual page 3:299.
     Purple, // Reserved if PR[qp] = 1
     Cyan,   // Reserved if PR[qp] = 1
     Brown,  // Reserved
+    #[default]
     White,  // Ignored; executes as nop (for hint space).
 
     Addp4,
@@ -1574,8 +1569,9 @@ impl ApplicationRegister {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
 pub enum Operand {
+    #[default]
     None,
     GPRegister(GPRegister),
     FloatRegister(FloatRegister),
@@ -1637,12 +1633,6 @@ impl fmt::Display for Operand {
             Operand::PR => { write!(f, "pr") },
             Operand::IP => { write!(f, "ip") },
         }
-    }
-}
-
-impl Default for Operand {
-    fn default() -> Self {
-        Operand::None
     }
 }
 
@@ -1952,7 +1942,7 @@ impl Decoder<IA64> for InstDecoder {
                     let mut hint = Some(word[28..30].load::<u8>());
                     // some `M` instructions don't actually have a hint, fix up after the fact.
                     match (tag, word[30..36].load::<u8>()) {
-                        (6 | 4, 0x1c | 0x1d | 0x1e | 0x1f) => {
+                        (6 | 4, 0x1c..=0x1f) => {
                             if !word[36] && word[27] {
                                 hint = None;
                             }
@@ -2023,7 +2013,7 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
             let imm41 = word2[0..41].load::<u64>();
             let imm = (imm41 << 21) + ((i as u64) << 20) + imm20a;
             // TODO: this is certainly assembled incorrectly
-            one_op(false, Operand::ImmU64(imm as u64))
+            one_op(false, Operand::ImmU64(imm))
         }
         X2 => {
             let r1 = word[6..13].load::<u8>();
@@ -2045,7 +2035,7 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
             two_op(
                 Some(0),
                 Operand::GPRegister(GPRegister(r1)),
-                Operand::ImmU64(imm as u64)
+                Operand::ImmU64(imm)
             )
         }
         X3 => {
@@ -2061,7 +2051,7 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
             let imm39 = word2[2..41].load::<u64>();
             // TODO: this is certainly assembled incorrectly
             let imm = (imm39 << 21) + ((i as u64) << 20) + imm20b;
-            one_op(false, Operand::ImmU64(imm as u64))
+            one_op(false, Operand::ImmU64(imm))
         }
         X4 => {
             let b1 = word[6..9].load::<u8>();
@@ -2076,7 +2066,7 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
             two_op(
                 Some(0),
                 Operand::BranchRegister(BranchRegister(b1)),
-                Operand::ImmU64(imm as u64)
+                Operand::ImmU64(imm)
             )
         }
         X5 => {
@@ -2085,7 +2075,7 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
             let imm41 = word2[0..41].load::<u64>();
             // TODO: this is certainly assembled incorrectly
             let imm = (imm41 << 21) + ((i as u64) << 20) + imm20;
-            one_op(false, Operand::ImmU64(imm as u64))
+            one_op(false, Operand::ImmU64(imm))
         }
     }
 }
@@ -3429,7 +3419,7 @@ fn get_b_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
         0x7 => {
             (Brp_ipwh_ih, B6)
         },
-        0x8 | 0x9 | 0xa | 0xb | 0xc | 0xd | 0xe | 0xf => { (Brown, None) },
+        0x8..=0xf => { (Brown, None) },
         _ => { unreachable!() },
     }
 }
