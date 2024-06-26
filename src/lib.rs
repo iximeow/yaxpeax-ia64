@@ -1236,7 +1236,7 @@ impl fmt::Display for Instruction {
         }
         write!(f, "{}", self.opcode)?;
         if let Some(sf) = self.sf {
-            write!(f, ".s{}", sf)?;
+            write!(f, ".s{sf}")?;
         }
         if let Some(hint) = self.hint {
             // hint bits of `00` indicate no prefetch hint
@@ -1251,11 +1251,11 @@ impl fmt::Display for Instruction {
                 break;
             }
             if i == 0 {
-                write!(f, " {}", op)?;
+                write!(f, " {op}")?;
             } else if self.dest_boundary == Some((i - 1) as u8) {
-                write!(f, "={}", op)?;
+                write!(f, "={op}")?;
             } else {
-                write!(f, ",{}", op)?;
+                write!(f, ",{op}")?;
             }
         }
         Ok(())
@@ -1517,7 +1517,7 @@ impl fmt::Display for ApplicationRegister {
             64 => write!(f, "ar.pfs"),
             65 => write!(f, "ar.lc"),
             66 => write!(f, "ar.ec"),
-            other => write!(f, "ar{}", other)
+            other => write!(f, "ar{other}")
         }
     }
 }
@@ -1613,20 +1613,20 @@ impl fmt::Display for Operand {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Operand::None => { unreachable!() },
-            Operand::GPRegister(reg) => { write!(f, "{}", reg) },
-            Operand::Memory(reg) => { write!(f, "[{}]", reg) },
-            Operand::ImmU64(imm) => { write!(f, "{:#x}", imm) },
+            Operand::GPRegister(reg) => { write!(f, "{reg}") },
+            Operand::Memory(reg) => { write!(f, "[{reg}]") },
+            Operand::ImmU64(imm) => { write!(f, "{imm:#x}") },
             Operand::ImmI64(imm) => { if imm < &0 {
                 write!(f, "-{:#x}", -imm)
             } else {
-                write!(f, "{:#x}", imm)
+                write!(f, "{imm:#x}")
             } },
-            Operand::FloatRegister(reg) => { write!(f, "{}", reg) },
-            Operand::PredicateRegister(reg) => { write!(f, "{}", reg) },
-            Operand::ApplicationRegister(reg) => { write!(f, "{}", reg) },
-            Operand::BranchRegister(reg) => { write!(f, "{}", reg) },
-            Operand::ControlRegister(reg) => { write!(f, "{}", reg) },
-            Operand::Indirection(ir, reg) => { write!(f, "{}[{}]", ir, reg) },
+            Operand::FloatRegister(reg) => { write!(f, "{reg}") },
+            Operand::PredicateRegister(reg) => { write!(f, "{reg}") },
+            Operand::ApplicationRegister(reg) => { write!(f, "{reg}") },
+            Operand::BranchRegister(reg) => { write!(f, "{reg}") },
+            Operand::ControlRegister(reg) => { write!(f, "{reg}") },
+            Operand::Indirection(ir, reg) => { write!(f, "{ir}[{reg}]") },
             Operand::PSR => { write!(f, "psr") },
             Operand::PSR_l => { write!(f, "psr.l") },
             Operand::PSR_um => { write!(f, "psr.um") },
