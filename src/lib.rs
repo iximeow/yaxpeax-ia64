@@ -1728,7 +1728,7 @@ impl Decoder<IA64> for InstDecoder {
     fn decode_into<T: Reader<<IA64 as Arch>::Address, <IA64 as Arch>::Word>>(&self, inst: &mut InstructionBundle, bytes: &mut T) -> Result<(), <IA64 as Arch>::DecodeError> {
         let mut ia64_word = [0u8; 16];
         bytes.next_n(&mut ia64_word)?;
-        let mut instruction_bytes = bitarr![Lsb0, u8; 0u8; 128];
+        let mut instruction_bytes = bitarr![u8, Lsb0; 0u8; 128];
         for i in 0..0u64.wrapping_offset(InstructionBundle::min_size()).to_linear() {
             instruction_bytes[(i * 8)..(i * 8 + 8)].store(ia64_word[i]);
         }
@@ -1742,7 +1742,7 @@ impl Decoder<IA64> for InstDecoder {
         ];
         let (instruction_types, _) = BUNDLE_TAGS[bundle_tag as usize].ok_or(DecodeError::BadBundle)?;
 
-        fn decode_l_instruction(word2: &BitSlice<Lsb0, u8>, word: &BitSlice<Lsb0, u8>) -> Instruction {
+        fn decode_l_instruction(word2: &BitSlice<u8, Lsb0>, word: &BitSlice<u8, Lsb0>) -> Instruction {
             let tag = word[37..41].load::<u8>();
 
             let (opcode, operand_encoding) = get_l_opcode_and_encoding(tag, word);
@@ -1761,7 +1761,7 @@ impl Decoder<IA64> for InstDecoder {
             }
         }
 
-        fn decode_instruction(word: &BitSlice<Lsb0, u8>, ty: InstructionType) -> Instruction {
+        fn decode_instruction(word: &BitSlice<u8, Lsb0>, ty: InstructionType) -> Instruction {
             let tag = word[37..41].load::<u8>();
 
             let ty = if tag >= 8 && (ty == InstructionType::M || ty == InstructionType::I) {
@@ -2001,7 +2001,7 @@ fn four_op(dest: Option<u8>, op1: Operand, op2: Operand, op3: Operand, op4: Oper
     (dest, [op1, op2, op3, op4, Operand::None])
 }
 
-fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2: &BitSlice<Lsb0, u8>) -> (Option<u8>, [Operand; 5]) {
+fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<u8, Lsb0>, word2: &BitSlice<u8, Lsb0>) -> (Option<u8>, [Operand; 5]) {
     use OperandEncodingX::*;
     match encoding {
         None => {
@@ -2079,7 +2079,7 @@ fn read_l_operands(encoding: OperandEncodingX, word: &BitSlice<Lsb0, u8>, word2:
         }
     }
 }
-fn read_b_operands(encoding: OperandEncodingB, word: &BitSlice<Lsb0, u8>) -> (Option<u8>, [Operand; 5]) {
+fn read_b_operands(encoding: OperandEncodingB, word: &BitSlice<u8, Lsb0>) -> (Option<u8>, [Operand; 5]) {
     use OperandEncodingB::*;
     match encoding {
         None => {
@@ -2191,7 +2191,7 @@ fn read_b_operands(encoding: OperandEncodingB, word: &BitSlice<Lsb0, u8>) -> (Op
         }
     }
 }
-fn read_f_operands(encoding: OperandEncodingF, word: &BitSlice<Lsb0, u8>) -> (Option<u8>, [Operand; 5]) {
+fn read_f_operands(encoding: OperandEncodingF, word: &BitSlice<u8, Lsb0>) -> (Option<u8>, [Operand; 5]) {
     use OperandEncodingF::*;
     match encoding {
         None => {
@@ -2319,7 +2319,7 @@ fn read_f_operands(encoding: OperandEncodingF, word: &BitSlice<Lsb0, u8>) -> (Op
         },
     }
 }
-fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Option<u8>, [Operand; 5]) {
+fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<u8, Lsb0>) -> (Option<u8>, [Operand; 5]) {
     use OperandEncodingI::*;
     match encoding {
         None => {
@@ -2666,7 +2666,7 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
         }
     }
 }
-fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Option<u8>, [Operand; 5]) {
+fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<u8, Lsb0>) -> (Option<u8>, [Operand; 5]) {
     use OperandEncodingM::*;
     match encoding {
         None => { unreachable!("none operand encoding"); }
@@ -3177,7 +3177,7 @@ fn read_m_operands(encoding: OperandEncodingM, word: &BitSlice<Lsb0, u8>) -> (Op
     }
 }
 
-fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<Lsb0, u8>) -> (Option<u8>, [Operand; 5]) {
+fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<u8, Lsb0>) -> (Option<u8>, [Operand; 5]) {
     use OperandEncodingA::*;
     match encoding {
         None => { unreachable!("none operand encoding"); }
@@ -3309,7 +3309,7 @@ fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<Lsb0, u8>) -> (Op
     }
 }
 
-fn get_l_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, OperandEncodingX) {
+fn get_l_opcode_and_encoding(tag: u8, word: &BitSlice<u8, Lsb0>) -> (Opcode, OperandEncodingX) {
     use Opcode::*;
     use OperandEncodingX::*;
 
@@ -3350,7 +3350,7 @@ fn get_l_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
     }
 }
 
-fn get_b_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, OperandEncodingB) {
+fn get_b_opcode_and_encoding(tag: u8, word: &BitSlice<u8, Lsb0>) -> (Opcode, OperandEncodingB) {
     use Opcode::*;
     use OperandEncodingB::*;
 
@@ -3424,7 +3424,7 @@ fn get_b_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
     }
 }
 
-fn get_f_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, OperandEncodingF) {
+fn get_f_opcode_and_encoding(tag: u8, word: &BitSlice<u8, Lsb0>) -> (Opcode, OperandEncodingF) {
     use Opcode::*;
     use OperandEncodingF::*;
 
@@ -3592,7 +3592,7 @@ fn get_f_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
     }
 }
 
-fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, OperandEncodingI) {
+fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<u8, Lsb0>) -> (Opcode, OperandEncodingI) {
     use Opcode::*;
     use OperandEncodingI::*;
 
@@ -3811,7 +3811,7 @@ fn get_i_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
     }
 }
 
-fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, OperandEncodingM) {
+fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<u8, Lsb0>) -> (Opcode, OperandEncodingM) {
     use Opcode::*;
     use OperandEncodingM::*;
 
@@ -4121,7 +4121,7 @@ fn get_m_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, Ope
     }
 }
 
-fn get_a_opcode_and_encoding(tag: u8, word: &BitSlice<Lsb0, u8>) -> (Opcode, OperandEncodingA) {
+fn get_a_opcode_and_encoding(tag: u8, word: &BitSlice<u8, Lsb0>) -> (Opcode, OperandEncodingA) {
     use Opcode::*;
     use OperandEncodingA::*;
 
