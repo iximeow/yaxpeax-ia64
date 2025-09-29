@@ -1198,16 +1198,18 @@ impl fmt::Display for Instruction {
                 self.operands[0],
             )
         } else if self.opcode == Opcode::Mov_mwh_ih {
+            // first hint described in Table 4-27, "Move to BR Whether Hint Completer"
             return write!(f, "mov{}{} {}={},{}",
-                ["", "?NONE?", ".dptk", "RESERVED"][self.operands[4].as_unsigned_imm() as usize],
+                [".sptk", "", ".dptk", "RESERVED"][self.operands[4].as_unsigned_imm() as usize],
                 ["", ".imp"][self.operands[3].as_unsigned_imm() as usize],
                 self.operands[0],
                 self.operands[1],
                 self.operands[2],
             )
         } else if self.opcode == Opcode::Mov_ret_mwh_ih {
+            // first hint described in Table 4-27, "Move to BR Whether Hint Completer"
             return write!(f, "mov.ret{}{} {}={},{}",
-                ["", "?NONE?", ".dptk", "RESERVED"][self.operands[4].as_unsigned_imm() as usize],
+                [".sptk", "", ".dptk", "RESERVED"][self.operands[4].as_unsigned_imm() as usize],
                 ["", ".imp"][self.operands[3].as_unsigned_imm() as usize],
                 self.operands[0],
                 self.operands[1],

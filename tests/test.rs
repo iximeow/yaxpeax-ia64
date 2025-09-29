@@ -310,7 +310,7 @@ fn test_bash_tilde_expand_word() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] nop.m 0x0; mov b0=r38; adds r12=0x10,r12;;";
+    let expected = "[MII] nop.m 0x0; mov b0=r38,0x0; adds r12=0x10,r12;;";
     let data = [0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x30, 0x05, 0x80, 0x03, 0x80, 0x01, 0x61, 0x00, 0x84];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -435,7 +435,7 @@ fn test_bash_tilde_expand_word() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MMI] ld8 r14=[r8],0x8;; nop.m 0x0; mov b6=r14";
+    let expected = "[MMI] ld8 r14=[r8],0x8;; nop.m 0x0; mov b6=r14,0x0";
     let data = [0x0a, 0x70, 0x20, 0x10, 0x18, 0x14, 0x00, 0x00, 0x00, 0x02, 0x00, 0xc0, 0xe0, 0x08, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -480,7 +480,7 @@ fn test_bash_tilde_expand_word() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] ld8 r8=[r14]; mov.i ar.pfs=r39;; mov b0=r38";
+    let expected = "[MII] ld8 r8=[r14]; mov.i ar.pfs=r39;; mov b0=r38,0x0";
     let data = [0x02, 0x40, 0x00, 0x1c, 0x18, 0x10, 0x00, 0x38, 0x01, 0x55, 0x00, 0x00, 0x60, 0x0a, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -510,7 +510,7 @@ fn test_bash_tilde_expand_word() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] mov r1=r40; mov.i ar.pfs=r39;; mov b0=r38";
+    let expected = "[MII] mov r1=r40; mov.i ar.pfs=r39;; mov b0=r38,0x0";
     let data = [0x02, 0x08, 0x00, 0x50, 0x00, 0x21, 0x00, 0x38, 0x01, 0x55, 0x00, 0x00, 0x60, 0x0a, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -570,7 +570,7 @@ fn test_bash_tilde_expand_word() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] nop.m 0x0; mov.i ar.pfs=r39;; mov b0=r38";
+    let expected = "[MII] nop.m 0x0; mov.i ar.pfs=r39;; mov b0=r38,0x0";
     let data = [0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x38, 0x01, 0x55, 0x00, 0x00, 0x60, 0x0a, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -590,7 +590,7 @@ fn test_bash_tilde_expand_word() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] nop.m 0x0; mov b0=r38; adds r12=0x10,r12;;";
+    let expected = "[MII] nop.m 0x0; mov b0=r38,0x0; adds r12=0x10,r12;;";
     let data = [0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x30, 0x05, 0x80, 0x03, 0x80, 0x01, 0x61, 0x00, 0x84];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -620,7 +620,7 @@ fn test_bash_tilde_expand_word() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MMI] ld8 r14=[r8],0x8;; nop.m 0x0; mov b6=r14";
+    let expected = "[MMI] ld8 r14=[r8],0x8;; nop.m 0x0; mov b6=r14,0x0";
     let data = [0x0a, 0x70, 0x20, 0x10, 0x18, 0x14, 0x00, 0x00, 0x00, 0x02, 0x00, 0xc0, 0xe0, 0x08, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -715,7 +715,7 @@ fn test_bash_tilde_expand_word() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] mov r8=r0; mov.i ar.pfs=r39;; mov b0=r38";
+    let expected = "[MII] mov r8=r0; mov.i ar.pfs=r39;; mov b0=r38,0x0";
     let data = [0x02, 0x40, 0x00, 0x00, 0x00, 0x21, 0x00, 0x38, 0x01, 0x55, 0x00, 0x00, 0x60, 0x0a, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -780,7 +780,7 @@ fn test_bash_rl_insert_close() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] nop.m 0x0; mov.i ar.lc=r46;; mov b0=r43";
+    let expected = "[MII] nop.m 0x0; mov.i ar.lc=r46;; mov b0=r43,0x0";
     let data = [0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x70, 0x05, 0x55, 0x00, 0x00, 0xb0, 0x0a, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -810,7 +810,7 @@ fn test_bash_rl_insert_close() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MIB] ld8 r1=[r14]; mov b6=r15; br.call.sptk.many b0=b6;;";
+    let expected = "[MIB] ld8 r1=[r14]; mov b6=r15,0x0; br.call.sptk.many b0=b6;;";
     let data = [0x11, 0x08, 0x00, 0x1c, 0x18, 0x10, 0x60, 0x78, 0x04, 0x80, 0x03, 0x00, 0x68, 0x00, 0x80, 0x10];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -850,7 +850,7 @@ fn test_bash_rl_insert_close() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] nop.m 0x0; mov.i ar.lc=r46;; mov b0=r43";
+    let expected = "[MII] nop.m 0x0; mov.i ar.lc=r46;; mov b0=r43,0x0";
     let data = [0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x70, 0x05, 0x55, 0x00, 0x00, 0xb0, 0x0a, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1140,7 +1140,7 @@ fn test_bash_rl_insert_close() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MIB] ld8 r1=[r18]; mov b6=r14; br.call.sptk.many b0=b6;;";
+    let expected = "[MIB] ld8 r1=[r18]; mov b6=r14,0x0; br.call.sptk.many b0=b6;;";
     let data = [0x11, 0x08, 0x00, 0x24, 0x18, 0x10, 0x60, 0x70, 0x04, 0x80, 0x03, 0x00, 0x68, 0x00, 0x80, 0x10];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1170,7 +1170,7 @@ fn test_bash_rl_insert_close() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] nop.m 0x0; mov b0=r43; nop.i 0x0";
+    let expected = "[MII] nop.m 0x0; mov b0=r43,0x0; nop.i 0x0";
     let data = [0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x58, 0x05, 0x80, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1295,7 +1295,7 @@ fn test_bash_rl_set_paren_blink_timeout() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MIB] nop.m 0x0; mov b0=r38; br.ret.sptk.many b0";
+    let expected = "[MIB] nop.m 0x0; mov b0=r38,0x0; br.ret.sptk.many b0";
     let data = [0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x30, 0x05, 0x80, 0x03, 0x80, 0x08, 0x00, 0x84, 0x00];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1350,7 +1350,7 @@ fn test_bash_rl_set_paren_blink_timeout() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MIB] nop.m 0x0; mov b0=r38; br.ret.sptk.many b0;;";
+    let expected = "[MIB] nop.m 0x0; mov b0=r38,0x0; br.ret.sptk.many b0;;";
     let data = [0x11, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x30, 0x05, 0x80, 0x03, 0x80, 0x08, 0x00, 0x84, 0x00];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1760,7 +1760,7 @@ fn test_bash_rl_set_paren_blink_timeout() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MMI] mov r32=r33; nop.m 0x0; mov b0=r46";
+    let expected = "[MMI] mov r32=r33; nop.m 0x0; mov b0=r46,0x0";
     let data = [0x08, 0x00, 0x01, 0x42, 0x00, 0x21, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0xe0, 0x0a, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1840,7 +1840,7 @@ fn test_bash_libc_csu_init() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MIB] ld8 r1=[r14]; mov b6=r15; br.call.sptk.many b0=b6;;";
+    let expected = "[MIB] ld8 r1=[r14]; mov b6=r15,0x0; br.call.sptk.many b0=b6;;";
     let data = [0x11, 0x08, 0x00, 0x1c, 0x18, 0x10, 0x60, 0x78, 0x04, 0x80, 0x03, 0x00, 0x68, 0x00, 0x80, 0x10];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1855,7 +1855,7 @@ fn test_bash_libc_csu_init() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MIB] nop.m 0x0; mov b0=r38; br.ret.sptk.many b0;;";
+    let expected = "[MIB] nop.m 0x0; mov b0=r38,0x0; br.ret.sptk.many b0;;";
     let data = [0x11, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x30, 0x05, 0x80, 0x03, 0x80, 0x08, 0x00, 0x84, 0x00];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1880,7 +1880,7 @@ fn test_bash_libc_csu_init() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MMI] ld8 r15=[r35],0x8;; ld8 r1=[r35]; mov b6=r15";
+    let expected = "[MMI] ld8 r15=[r35],0x8;; ld8 r1=[r35]; mov b6=r15,0x0";
     let data = [0x0a, 0x78, 0x20, 0x46, 0x18, 0x14, 0x10, 0x00, 0x8c, 0x30, 0x20, 0xc0, 0xf0, 0x08, 0x00, 0x07];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
@@ -1895,7 +1895,7 @@ fn test_bash_libc_csu_init() {
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();
     assert_eq!(format!("{inst}"), expected);
-    let expected = "[MII] mov r1=r35; mov b0=r33; mov.i ar.pfs=r34";
+    let expected = "[MII] mov r1=r35; mov b0=r33,0x0; mov.i ar.pfs=r34";
     let data = [0x00, 0x08, 0x00, 0x46, 0x00, 0x21, 0x00, 0x08, 0x05, 0x80, 0x03, 0x00, 0x20, 0x02, 0xaa, 0x00];
     let mut reader = U8Reader::new(&data[..]);
     let inst = decoder.decode(&mut reader).unwrap();

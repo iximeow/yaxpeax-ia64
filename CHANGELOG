@@ -2,8 +2,10 @@
 
 * update yaxpeax-arch to 0.3.2 (thank you @ravenslofty), with future 0.3.0 DisplaySink impls to come
 * fuzzing found a few decode/display issues:
-  * `mov{,.ret}.mwh.ih` handled operands incorrectly, interpreting the tag as part of hinting.
-    in addition to being wrong, this would panic if the tag was greater than three.
+  * `mov{,.ret}.mwh.ih` handled operands incorrectly.
+    - the tag was interpreted as part of hinting.
+    - .sptk and `none` hints were incorrectly reported.
+    - in addition to being wrong, this would panic if the tag was greater than three.
   * `mov pr.rot = ...` decoded its immediate incorrectly.
     - if the non-sign-extended part was greater than 255, decoding would panic.
     - the decoded immediate was not sign extended or rotated properly.
