@@ -1,3 +1,7 @@
+## 0.3.0
+
+update yaxpeax-arch to 0.3.2 (thank you @ravenslofty), with future 0.3.0 DisplaySink impls to come
+
 ## 0.2.1
 
 * fix incorrect `yaxpeax_arch::Arch` impl for `std`-enabled builds
