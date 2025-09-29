@@ -2488,3 +2488,20 @@ fn test_predication_not_allowed() {
     assert_eq!(format!("{inst}"), expected);
     assert!(!inst.well_defined());
 }
+
+#[test]
+fn test_from_fuzzer() {
+    let decoder = InstDecoder::default();
+
+    let expected = "[MFI] (p01) cmpxchg4.acq r0=[r127],r64; (p40) break.f 0x0; mov pr=0xfffffffff8400000";
+    let data = [0x2c, 0x00, 0x00, 0xff, 0x11, 0x10, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x0a];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{inst}"), expected);
+
+    let expected = "[MII] (p17) break.m 0x4; break.i 0x0; mov.retRESERVED.imp b0=r48,0x1ff";
+    let data = [0x20, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfb, 0xff, 0x07];
+    let mut reader = U8Reader::new(&data[..]);
+    let inst = decoder.decode(&mut reader).unwrap();
+    assert_eq!(format!("{inst}"), expected);
+}

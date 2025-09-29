@@ -1,0 +1,22 @@
+[package]
+name = "yaxpeax-ia64-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+yaxpeax-arch = "0.3"
+
+[dependencies.yaxpeax-ia64]
+path = ".."
+
+[[bin]]
+name = "display_does_not_panic"
+path = "fuzz_targets/display_does_not_panic.rs"
+test = false
+doc = false
+bench = false

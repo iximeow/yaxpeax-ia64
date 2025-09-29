@@ -1198,18 +1198,20 @@ impl fmt::Display for Instruction {
                 self.operands[0],
             )
         } else if self.opcode == Opcode::Mov_mwh_ih {
-            return write!(f, "mov{}{} {}={}",
-                ["", "?NONE?", ".dptk", "RESERVED"][self.operands[2].as_unsigned_imm() as usize],
+            return write!(f, "mov{}{} {}={},{}",
+                ["", "?NONE?", ".dptk", "RESERVED"][self.operands[4].as_unsigned_imm() as usize],
                 ["", ".imp"][self.operands[3].as_unsigned_imm() as usize],
                 self.operands[0],
                 self.operands[1],
+                self.operands[2],
             )
         } else if self.opcode == Opcode::Mov_ret_mwh_ih {
-            return write!(f, "mov.ret{}{} {}={}",
-                ["", "?NONE?", ".dptk", "RESERVED"][self.operands[2].as_unsigned_imm() as usize],
+            return write!(f, "mov.ret{}{} {}={},{}",
+                ["", "?NONE?", ".dptk", "RESERVED"][self.operands[4].as_unsigned_imm() as usize],
                 ["", ".imp"][self.operands[3].as_unsigned_imm() as usize],
                 self.operands[0],
                 self.operands[1],
+                self.operands[2],
             )
         } else if self.opcode == Opcode::Dep_z {
             if self.operands[2].as_unsigned_imm() == 64 - self.operands[3].as_unsigned_imm() {
@@ -2587,13 +2589,16 @@ fn read_i_operands(encoding: OperandEncodingI, word: &BitSlice<Lsb0, u8>) -> (Op
             )
         }
         I24 => {
-            let imm = word[6..33].load::<u8>();
-            let _s = word[36] as u32;
+            // sign extend as described in Table 4-74: "Immediate Formation"
+            let imm = word[6..33].load::<u64>();
+            let s = word[36] as u64;
+            let signed = ((s << 27) | imm) as i64;
+            let extended = signed << 36 >> 36;
             // TODO: this is missing ... 17 bits? sign extend?
             two_op(
                 Some(0),
                 Operand::PR,
-                Operand::ImmU64(imm as u64),
+                Operand::ImmU64(extended as u64),
             )
         }
         I25 => {
@@ -3265,9 +3270,10 @@ fn read_a_operands(encoding: OperandEncodingA, word: &BitSlice<Lsb0, u8>) -> (Op
         },
         A7 => {
             let p1 = word[6..12].load::<u8>();
-            let r2 = word[13..20].load::<u8>();
-            // TODO: what happens if this isn't zero?
-            assert_eq!(r2, 0);
+            let _r2 = word[13..20].load::<u8>();
+            // TODO: what happens if this isn't zero? at least set the instruction not
+            // well-defined.
+            // assert_eq!(r2, 0);
             let r3 = word[20..27].load::<u8>();
             let p2 = word[27..33].load::<u8>();
             four_op(

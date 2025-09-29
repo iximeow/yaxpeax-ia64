@@ -1,6 +1,13 @@
 ## 0.3.0
 
-update yaxpeax-arch to 0.3.2 (thank you @ravenslofty), with future 0.3.0 DisplaySink impls to come
+* update yaxpeax-arch to 0.3.2 (thank you @ravenslofty), with future 0.3.0 DisplaySink impls to come
+* fuzzing found a few decode/display issues:
+  * `mov{,.ret}.mwh.ih` handled operands incorrectly, interpreting the tag as part of hinting.
+    in addition to being wrong, this would panic if the tag was greater than three.
+  * `mov pr.rot = ...` decoded its immediate incorrectly.
+    - if the non-sign-extended part was greater than 255, decoding would panic.
+    - the decoded immediate was not sign extended or rotated properly.
+  * `cmp4.crel.crypte` (A7 operand encodings) would assert if `r2` was not zero.
 
 ## 0.2.1
 
